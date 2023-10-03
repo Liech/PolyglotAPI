@@ -6,9 +6,9 @@ namespace pybind11 {
   class object;
 }
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Python {
-    class FunctionRelay : public Iyathuum::FunctionRelay {
+    class FunctionRelay : public PolyglotAPI::FunctionRelay {
       public:
       FunctionRelay();
       virtual ~FunctionRelay() = default;

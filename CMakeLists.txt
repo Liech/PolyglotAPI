@@ -90,6 +90,9 @@ target_link_libraries(PolyglotAPI PRIVATE
 debug ${pythonlibraryDebug}
 optimized ${pythonlibrary}
 )
+target_include_directories(PolyglotAPI SYSTEM PUBLIC 
+"${CMAKE_CURRENT_LIST_DIR}/Source/"
+)
 
 find_package(pybind11 CONFIG REQUIRED)
 

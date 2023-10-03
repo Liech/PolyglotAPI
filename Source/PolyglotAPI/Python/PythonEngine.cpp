@@ -17,13 +17,13 @@
 #include <filesystem>
 
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Python {
     class PythonEngine::pimpl {
       public:
       pybind11::module_ mainModule;
       std::unique_ptr<Python::FunctionRelay> relay = nullptr;
-      std::vector<std::unique_ptr<Iyathuum::API>>   _apis;
+      std::vector<std::unique_ptr<API>>   _apis;
     };
 
     PythonEngine& PythonEngine::instance() {
@@ -102,7 +102,7 @@ namespace Haas {
       _initialized = false;
     }
 
-    void PythonEngine::addAPI(std::unique_ptr<Iyathuum::API> api) {
+    void PythonEngine::addAPI(std::unique_ptr<API> api) {
       assert(!_initialized);
       _pimpl->_apis.push_back(std::move(api));
     }
@@ -111,11 +111,11 @@ namespace Haas {
       return _pimpl->_apis.size();
     }
 
-    Iyathuum::API& PythonEngine::getAPI(size_t number) {
+    API& PythonEngine::getAPI(size_t number) {
       return *_pimpl->_apis[number];
     }
 
-    Iyathuum::FunctionRelay& PythonEngine::getRelay() {
+    PolyglotAPI::FunctionRelay& PythonEngine::getRelay() {
       return *_pimpl->relay;
     }
   }

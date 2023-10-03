@@ -4,7 +4,7 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-namespace Iyathuum {
+namespace PolyglotAPI {
   class API;
   class APIFunction;
   class FunctionRelay;
@@ -13,14 +13,14 @@ namespace pybind11 {
   class object;
 }
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Python {
     class PythonEngine {
       public:
       static PythonEngine& instance();
       virtual ~PythonEngine();
 
-      void addAPI(std::unique_ptr<Iyathuum::API>);
+      void addAPI(std::unique_ptr<API>);
       void initialize();
       void dispose();
 
@@ -28,8 +28,8 @@ namespace Haas {
       void executeFile(const std::string& filename);
 
       size_t numberOfApis() const;
-      Iyathuum::API& getAPI(size_t number);
-      Iyathuum::FunctionRelay& getRelay();
+      API& getAPI(size_t number);
+      PolyglotAPI::FunctionRelay& getRelay();
 
       private:
       PythonEngine();

@@ -4,7 +4,7 @@
 #include <functional>
 #include <nlohmann/json.hpp>
 
-namespace Iyathuum {
+namespace PolyglotAPI {
   /// <summary>
   /// std::function with a name and description strapped on
   /// </summary>

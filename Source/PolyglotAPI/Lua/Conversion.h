@@ -4,7 +4,7 @@
 
 struct lua_State;
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Lua {
     class FunctionRelay;
 

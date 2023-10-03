@@ -7,7 +7,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Python {
     nlohmann::json Conversion::py2j(const pybind11::object& input, Python::FunctionRelay& relay) {
       //maybe this is a better way if it would work: https://github.com/pybind/pybind11/issues/1914

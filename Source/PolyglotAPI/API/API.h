@@ -4,7 +4,7 @@
 #include <string>
 #include "APIFunction.h"
 
-namespace Iyathuum {
+namespace PolyglotAPI {
   /// <summary>
   /// defined in libraries to make global functions avaiable to scripting
   /// input may contain script functions (disguised numbers). To call them a FunctionRelay must be known.

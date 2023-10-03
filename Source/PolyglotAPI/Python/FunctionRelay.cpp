@@ -7,7 +7,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Python {
     class pyobjcmp {
       public:

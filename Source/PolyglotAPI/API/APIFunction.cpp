@@ -1,6 +1,6 @@
 #include "APIFunction.h"
 
-namespace Iyathuum {
+namespace PolyglotAPI {
   APIFunction::APIFunction(const std::string& name, std::function<nlohmann::json(const nlohmann::json&)> func) {
     _name = name;
     _func = func;

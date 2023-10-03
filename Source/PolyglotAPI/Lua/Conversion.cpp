@@ -4,7 +4,7 @@
 
 #include "FunctionRelay.h"
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Lua {
     Conversion::Conversion(lua_State* state, Lua::FunctionRelay& relay) 
       : _relay(relay) { 

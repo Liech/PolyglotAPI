@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-namespace Iyathuum {
+namespace PolyglotAPI {
   /// <summary>
   /// Deserializes numbers into callable functions. 
   /// E.g. a script gives an APIFunction a Function (disguised as number) in its parameters. To call it an Relay is needed

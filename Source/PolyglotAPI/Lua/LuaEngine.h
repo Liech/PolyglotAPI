@@ -7,14 +7,14 @@
 #include <vector>
 #include <nlohmann/json_fwd.hpp>
 
-namespace Iyathuum {
+namespace PolyglotAPI {
   class API;
   class FunctionRelay;
 }
 
 struct lua_State;
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Lua {
     class FunctionRelay;
     class Conversion;
@@ -24,7 +24,7 @@ namespace Haas {
       LuaEngine();
       ~LuaEngine();
 
-      void addApi(std::unique_ptr<Iyathuum::API>);
+      void addApi(std::unique_ptr<API>);
 
       static std::string cleanComments(const std::string& code, char symbol = '#'); //supreme commander bp files uses this unauthorized comment
 
@@ -35,7 +35,7 @@ namespace Haas {
       void           setVar          (const std::string& name, const nlohmann::json& value);
       void           registerFunction(const std::string& name, std::function < nlohmann::json(const nlohmann::json&)>);
 
-      Iyathuum::FunctionRelay& getRelay();
+      FunctionRelay& getRelay();
     private:
       void initialize();
       void printTop(int indentation = 0);

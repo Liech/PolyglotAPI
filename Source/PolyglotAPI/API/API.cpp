@@ -1,6 +1,6 @@
 #include "API.h"
 
-namespace Iyathuum {
+namespace PolyglotAPI {
   API::API(const std::string& name) {
     _name = name;
   }

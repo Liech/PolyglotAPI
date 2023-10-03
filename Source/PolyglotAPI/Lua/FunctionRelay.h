@@ -4,9 +4,9 @@
 
 struct lua_State;
 
-namespace Haas {
+namespace PolyglotAPI {
   namespace Lua {
-    class FunctionRelay : public Iyathuum::FunctionRelay {
+    class FunctionRelay : public PolyglotAPI::FunctionRelay {
       public:
       FunctionRelay(lua_State*);
       virtual ~FunctionRelay() = default;
