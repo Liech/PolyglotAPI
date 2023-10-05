@@ -42,7 +42,7 @@ namespace PolyglotAPI {
 
     }
 
-    PYBIND11_EMBEDDED_MODULE(HaasModule, m) {
+    PYBIND11_EMBEDDED_MODULE(PolyglotModule, m) {
       PythonEngine& engine = PythonEngine::instance();
 
       for (size_t apiID = 0; apiID < engine.numberOfApis(); apiID++) {
@@ -68,7 +68,7 @@ namespace PolyglotAPI {
       try {
         Py_SetPythonHome(L"Data/python");
         pybind11::initialize_interpreter();
-        _pimpl->mainModule = pybind11::module_::import("HaasModule");
+        _pimpl->mainModule = pybind11::module_::import("PolyglotModule");
       } catch (pybind11::error_already_set& e) {
         std::cout << e.what() << std::endl;
         throw;
