@@ -19,6 +19,8 @@ namespace PolyglotAPI {
         return input.cast<int>();
       else if (typ == "<class 'str'>")
         return input.cast<std::string>();
+      else if (typ == "<class 'bool'>")
+        return input.cast<bool>();
       else if (typ == "<class 'dict'>") {
         nlohmann::json result;
         pybind11::dict d = input;
