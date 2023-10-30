@@ -22,7 +22,7 @@ namespace PolyglotAPI {
     class LuaEngine {
       public:
       LuaEngine();
-      ~LuaEngine();
+      virtual ~LuaEngine();
 
       void addApi(std::unique_ptr<API>);
 
@@ -35,7 +35,7 @@ namespace PolyglotAPI {
       void           setVar          (const std::string& name, const nlohmann::json& value);
       void           registerFunction(const std::string& name, std::function < nlohmann::json(const nlohmann::json&)>);
 
-      FunctionRelay& getRelay();
+      PolyglotAPI::FunctionRelay& getRelay();
     private:
       void initialize();
       void printTop(int indentation = 0);

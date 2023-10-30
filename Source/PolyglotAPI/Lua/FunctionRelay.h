@@ -1,6 +1,6 @@
 #pragma once
 
-#include "API/FunctionRelay.h"
+#include "PolyglotAPI/API/FunctionRelay.h"
 
 struct lua_State;
 

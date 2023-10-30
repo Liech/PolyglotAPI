@@ -211,7 +211,7 @@ namespace PolyglotAPI {
       return result;
     }
 
-    FunctionRelay& LuaEngine::getRelay() {
+    PolyglotAPI::FunctionRelay& LuaEngine::getRelay() {
       return *_relay;
     }
   }
