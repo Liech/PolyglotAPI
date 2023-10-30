@@ -20,7 +20,7 @@ namespace PolyglotAPI {
       static PythonEngine& instance();
       virtual ~PythonEngine();
 
-      void addAPI(std::unique_ptr<API>);
+      void addAPI(std::shared_ptr<API>);
       void initialize();
       void dispose();
 
@@ -34,7 +34,7 @@ namespace PolyglotAPI {
       private:
       PythonEngine();
 
-      bool                                          _initialized = false;
+      bool _initialized = false;
 
       class pimpl;
       std::unique_ptr<pimpl> _pimpl;

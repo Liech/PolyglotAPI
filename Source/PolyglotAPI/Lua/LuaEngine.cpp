@@ -20,7 +20,7 @@ namespace PolyglotAPI {
       lua_State*                                                        _state     = nullptr;
       std::unique_ptr<Lua::Conversion>                                  _conversion;
       std::vector<std::function<nlohmann::json(const nlohmann::json&)>> _registry;      
-      std::vector<std::unique_ptr<API>> _apis;
+      std::vector<std::shared_ptr<API>> _apis;
     };
 
 
@@ -28,7 +28,7 @@ namespace PolyglotAPI {
       initialize();
     }
 
-    void LuaEngine::addApi(std::unique_ptr<API> api){
+    void LuaEngine::addApi(std::shared_ptr<API> api){
       int apiIndex = _pimpl->_apis.size();
       for (size_t i = 0; i < api->numberOfFunctions(); i++) {
         auto fun = api->getFunction(i);
@@ -36,7 +36,7 @@ namespace PolyglotAPI {
           return _pimpl->_apis[apiIndex]->getFunction(i).call(input);
           });
       }
-      _pimpl->_apis.push_back(std::move(api));
+      _pimpl->_apis.push_back(api);
     }
 
     void LuaEngine::initialize() { 

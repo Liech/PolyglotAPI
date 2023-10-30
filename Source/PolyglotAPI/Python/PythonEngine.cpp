@@ -23,7 +23,7 @@ namespace PolyglotAPI {
       public:
       pybind11::module_ mainModule;
       std::unique_ptr<Python::FunctionRelay> relay = nullptr;
-      std::vector<std::unique_ptr<API>>   _apis;
+      std::vector<std::shared_ptr<API>>   _apis;
     };
 
     PythonEngine& PythonEngine::instance() {
@@ -102,9 +102,9 @@ namespace PolyglotAPI {
       _initialized = false;
     }
 
-    void PythonEngine::addAPI(std::unique_ptr<API> api) {
+    void PythonEngine::addAPI(std::shared_ptr<API> api) {
       assert(!_initialized);
-      _pimpl->_apis.push_back(std::move(api));
+      _pimpl->_apis.push_back(api);
     }
 
     size_t PythonEngine::numberOfApis() const {

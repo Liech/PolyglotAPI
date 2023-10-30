@@ -17,6 +17,7 @@ namespace PolyglotAPI {
       std::string popStr(int pos);
 
       private:
+        void dumpstack(lua_State* L);
 
       Lua::FunctionRelay& _relay;
       lua_State*          _state;

@@ -24,7 +24,7 @@ namespace PolyglotAPI {
       LuaEngine();
       virtual ~LuaEngine();
 
-      void addApi(std::unique_ptr<API>);
+      void addApi(std::shared_ptr<API>);
 
       static std::string cleanComments(const std::string& code, char symbol = '#'); //supreme commander bp files uses this unauthorized comment
 

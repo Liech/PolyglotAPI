@@ -6,8 +6,8 @@
 
 namespace PolyglotAPI {
   namespace Lua {
-    Conversion::Conversion(lua_State* state, Lua::FunctionRelay& relay) 
-      : _relay(relay) { 
+    Conversion::Conversion(lua_State* state, Lua::FunctionRelay& relay)
+      : _relay(relay) {
       _state = state;
     }
 
@@ -18,10 +18,7 @@ namespace PolyglotAPI {
         return;
 
       if (!lua_istable(_state, -1)) {
-        if (lua_isstring(_state, -1)) {
-          result = popStr(-1);
-        }
-        else if (lua_isnumber(_state, -1)) {
+        if (lua_isnumber(_state, -1)) {
           float number = lua_tonumber(_state, -1);
           if (number == (int)number)
             result = (int)number;
@@ -35,31 +32,34 @@ namespace PolyglotAPI {
         else if (lua_isnil(_state, -1)) {
           result = nlohmann::json();
         }
+        else if (lua_isstring(_state, -1)) {
+          result = popStr(-1);
+        }
         else {
-            int top = lua_gettop(_state);
-            //printf("(%s,%d) top=%d\n", func, line, top);
-            for (int i = 0; i < top; i++) {
-              int positive = top - i;
-              int negative = -(i + 1);
-              int type = lua_type(_state, positive);
-              int typeN = lua_type(_state, negative);
-              const char* typeName = lua_typename(_state, type);
-              printf("%d/%d: type=%s", positive, negative, typeName);
-              switch (type) {
-              case LUA_TNUMBER:
-                printf(" value=%f", lua_tonumber(_state, positive));
-                break;
-              case LUA_TSTRING:
-                printf(" value=%s", lua_tostring(_state, positive));
-                break;
-              case LUA_TFUNCTION:
-                if (lua_iscfunction(_state, positive)) {
-                  printf(" C:%p", lua_tocfunction(_state, positive));
-                }
-                break;
+          int top = lua_gettop(_state);
+          //printf("(%s,%d) top=%d\n", func, line, top);
+          for (int i = 0; i < top; i++) {
+            int positive = top - i;
+            int negative = -(i + 1);
+            int type = lua_type(_state, positive);
+            int typeN = lua_type(_state, negative);
+            const char* typeName = lua_typename(_state, type);
+            printf("%d/%d: type=%s", positive, negative, typeName);
+            switch (type) {
+            case LUA_TNUMBER:
+              printf(" value=%f", lua_tonumber(_state, positive));
+              break;
+            case LUA_TSTRING:
+              printf(" value=%s", lua_tostring(_state, positive));
+              break;
+            case LUA_TFUNCTION:
+              if (lua_iscfunction(_state, positive)) {
+                printf(" C:%p", lua_tocfunction(_state, positive));
               }
-              printf("\n");
+              break;
             }
+            printf("\n");
+          }
           throw std::runtime_error("Unkown type");
         }
         return;
@@ -102,7 +102,7 @@ namespace PolyglotAPI {
           assign(result, sub);
         }
         else if (lua_isfunction(_state, -1)) {
-          assign(result,_relay.addFunction());
+          assign(result, _relay.addFunction());
         }
         else
           throw std::runtime_error("Unkown Type");
@@ -112,7 +112,7 @@ namespace PolyglotAPI {
 
     void Conversion::toTable(const nlohmann::json& value) {
       std::string t = value.type_name();
-      if (t == "number"|| t == "number_integer") {
+      if (t == "number" || t == "number_integer") {
         if (value.is_number_float()) {
           float v = value;
           lua_pushnumber(_state, v);
@@ -135,7 +135,7 @@ namespace PolyglotAPI {
       }
       else if (t == "array") {
         lua_newtable(_state);
-        int count = 1;
+        int count = 0;
         for (auto item : value.items()) {
           nlohmann::json value = item.value();
           lua_pushnumber(_state, count);
@@ -154,7 +154,7 @@ namespace PolyglotAPI {
           lua_settable(_state, -3);
         }
       }
-      else if (value.is_null())         {
+      else if (value.is_null()) {
         lua_pushnil(_state);
       }
     }
@@ -166,6 +166,30 @@ namespace PolyglotAPI {
         return lua_tostring(_state, pos);
 
       throw std::runtime_error("Unkown");
+    }
+
+    void Conversion::dumpstack(lua_State* L) {
+      int top = lua_gettop(L);
+      for (int i = 1; i <= top; i++) {
+        printf("%d\t%s\t", i, luaL_typename(L, i));
+        switch (lua_type(L, i)) {
+        case LUA_TNUMBER:
+          printf("%g\n", lua_tonumber(L, i));
+          break;
+        case LUA_TSTRING:
+          printf("%s\n", lua_tostring(L, i));
+          break;
+        case LUA_TBOOLEAN:
+          printf("%s\n", (lua_toboolean(L, i) ? "true" : "false"));
+          break;
+        case LUA_TNIL:
+          printf("%s\n", "nil");
+          break;
+        default:
+          printf("%p\n", lua_topointer(L, i));
+          break;
+        }
+      }
     }
   }
 }
