@@ -18,7 +18,7 @@ namespace PolyglotAPI {
 
     class FunctionRelay::pimpl {
       public:
-      std::map<size_t          , pybind11::object          > functionMap;
+      std::map<size_t          , pybind11::function          > functionMap;
       std::map<pybind11::object, size_t          , pyobjcmp> objectMap  ;
     };
 
@@ -27,6 +27,7 @@ namespace PolyglotAPI {
     }
 
     nlohmann::json FunctionRelay::call(size_t id, const nlohmann::json& input) {
+      //https://github.com/pybind/pybind11/discussions/3450
       return Conversion::py2j(_pimpl->functionMap[id](Conversion::j2py(input)), *this);
     }
 
