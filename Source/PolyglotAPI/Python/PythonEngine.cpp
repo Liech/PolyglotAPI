@@ -78,7 +78,7 @@ namespace PolyglotAPI {
     void PythonEngine::execute(const std::string& pythonCode) {
       try {
         auto locals = pybind11::dict(**_pimpl->mainModule.attr("__dict__"));
-        pybind11::exec(pythonCode, pybind11::globals());//, locals);
+        pybind11::exec(pythonCode, pybind11::globals(), locals);
       } catch (pybind11::error_already_set& e) {
         std::cout << e.what() << std::endl;
         throw;
