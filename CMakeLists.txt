@@ -85,6 +85,8 @@ find_library(pythonlibraryDebug
 )
 target_include_directories(PolyglotAPI SYSTEM PRIVATE 
 ${Python3_INCLUDE_DIRS}
+)
+target_include_directories(PolyglotAPI SYSTEM PUBLIC 
 "Source/PolyglotAPI"
 )
 
