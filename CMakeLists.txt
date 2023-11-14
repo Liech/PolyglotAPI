@@ -39,6 +39,7 @@ set(Header_FilesAPI
     "Source/PolyglotAPI/API/API.h"
     "Source/PolyglotAPI/API/APIFunction.h"
     "Source/PolyglotAPI/API/FunctionRelay.h"
+    "Source/PolyglotAPI/API/TestFunctionRelay.h"
 )
 source_group("Header Files/API" FILES ${Header_FilesAPI})
 
@@ -46,6 +47,7 @@ set(Source_FilesAPI
     "Source/PolyglotAPI/API/API.cpp"
     "Source/PolyglotAPI/API/APIFunction.cpp"
     "Source/PolyglotAPI/API/FunctionRelay.cpp"
+    "Source/PolyglotAPI/API/TestFunctionRelay.cpp"
 )
 source_group("Source Files/API" FILES ${Source_FilesAPI})
 
