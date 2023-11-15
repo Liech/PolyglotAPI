@@ -1,5 +1,7 @@
 #include "APIFunction.h"
 
+#include <iostream>
+
 namespace PolyglotAPI {
   APIFunction::APIFunction(const std::string& name, std::function<nlohmann::json(const nlohmann::json&)> func) {
     _name = name;
@@ -11,7 +13,16 @@ namespace PolyglotAPI {
   }
 
   nlohmann::json APIFunction::call(const nlohmann::json& input) const {
-    return _func(input);
+    try {
+      auto result = _func(input);
+      return result;
+    }
+    catch (const std::exception& e) {
+      std::cout << " --------error message ------- " << std::endl;
+      std::cout << e.what() << std::endl;
+      std::cout << " --------error message end ---------- " << std::endl;
+      throw e;
+    }
   }
 
   std::string APIFunction::getDescription() const {
