@@ -11,6 +11,7 @@ namespace PolyglotAPI {
 }
 namespace pybind11 {
   class object;
+  class module_;
 }
 
 namespace PolyglotAPI {
@@ -31,7 +32,10 @@ namespace PolyglotAPI {
       API& getAPI(size_t number);
       PolyglotAPI::FunctionRelay& getRelay();
 
-      private:
+      void addCustomFunction(const std::string& name, std::function<void(pybind11::module_&)> fun);
+      const std::map<std::string,std::function<void(pybind11::module_&)>>& getCustomFunctions() const;
+
+    private:
       PythonEngine();
 
       bool _initialized = false;

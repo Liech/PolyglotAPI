@@ -11,6 +11,7 @@
 #include <pybind11/embed.h>
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
+#include <pybind11/numpy.h>
 
 #include <iostream>
 #include <fstream>
@@ -24,6 +25,7 @@ namespace PolyglotAPI {
       pybind11::module_ mainModule;
       std::unique_ptr<Python::FunctionRelay> relay = nullptr;
       std::vector<std::shared_ptr<API>>   _apis;
+      std::map<std::string, std::function<void(pybind11::module_&)>> customFunctions;
     };
 
     PythonEngine& PythonEngine::instance() {
@@ -42,6 +44,12 @@ namespace PolyglotAPI {
 
     }
 
+    
+    //pybind11::array_t<int> get_indices(int& g) {
+    //  // an empty capsule
+    //  return pybind11::array_t<int>{5, g.indices, pybind11::capsule{}};
+    //}
+
     PYBIND11_EMBEDDED_MODULE(PolyglotModule, m) {
       PythonEngine& engine = PythonEngine::instance();
 
@@ -54,6 +62,9 @@ namespace PolyglotAPI {
             return Conversion::j2py(func.call(Conversion::py2j(input, r)));
             }, pybind11::arg("input") = pybind11::none());
         }
+      }
+      for (auto& func : engine.getCustomFunctions()) {
+        func.second(m);
       }
     }
 
@@ -118,5 +129,14 @@ namespace PolyglotAPI {
     PolyglotAPI::FunctionRelay& PythonEngine::getRelay() {
       return *_pimpl->relay;
     }
+
+    void PythonEngine::addCustomFunction(const std::string& name, std::function<void(pybind11::module_&)> fun) {
+      _pimpl->customFunctions[name] = fun;
+    }
+
+    const std::map<std::string, std::function<void(pybind11::module_&)>>& PythonEngine::getCustomFunctions() const {
+      return _pimpl->customFunctions;
+    }
+
   }
 }

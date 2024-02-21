@@ -83,14 +83,14 @@ find_library(pythonlibraryDebug
     HINTS "${CMAKE_PREFIX_PATH}/lib"
     REQUIRED
 )
-target_include_directories(PolyglotAPI SYSTEM PRIVATE 
+target_include_directories(PolyglotAPI SYSTEM PUBLIC 
 ${Python3_INCLUDE_DIRS}
 )
 target_include_directories(PolyglotAPI SYSTEM PUBLIC 
 "Source/PolyglotAPI"
 )
 
-target_link_libraries(PolyglotAPI PRIVATE
+target_link_libraries(PolyglotAPI PUBLIC
 debug ${pythonlibraryDebug}
 optimized ${pythonlibrary}
 )
@@ -103,10 +103,9 @@ find_package(pybind11 CONFIG REQUIRED)
 target_link_libraries(PolyglotAPI PRIVATE
 nlohmann_json::nlohmann_json 
 lua
+)
+target_link_libraries(PolyglotAPI PUBLIC
 pybind11::headers
 )
-
-
-
 
 set_target_properties(PolyglotAPI PROPERTIES FOLDER "PolyglotAPI")
