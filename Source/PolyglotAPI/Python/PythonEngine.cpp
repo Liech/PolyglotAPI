@@ -35,7 +35,7 @@ namespace PolyglotAPI {
 
     PythonEngine::~PythonEngine() {
       if (_initialized)
-        throw std::runtime_error("Please dispose() the PythonEngine correctly");
+        std::cout<<"Please dispose() the PythonEngine correctly"<<std::endl;
     }
 
     PythonEngine::PythonEngine() {
