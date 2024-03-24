@@ -8,9 +8,11 @@ namespace PolyglotAPI {
   /// <summary>
   /// std::function with a name and description strapped on
   /// </summary>
-  class APIFunction {
+  class __declspec(dllexport) APIFunction { 
     public:
       APIFunction(const std::string& name, std::function<nlohmann::json(const nlohmann::json&)>);
+      virtual ~APIFunction();
+
       void setDescription(const std::string&);
 
       nlohmann::json call(const nlohmann::json&) const;

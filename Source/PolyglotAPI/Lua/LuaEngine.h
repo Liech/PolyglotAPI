@@ -19,7 +19,7 @@ namespace PolyglotAPI {
     class FunctionRelay;
     class Conversion;
 
-    class LuaEngine {
+    class __declspec(dllexport) LuaEngine {
       public:
       LuaEngine();
       virtual ~LuaEngine();

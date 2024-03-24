@@ -1,8 +1,14 @@
 #include "API.h"
 
+#include "APIFunction.h"
+
 namespace PolyglotAPI {
   API::API(const std::string& name) {
     _name = name;
+  }
+
+  API::~API() {
+
   }
 
   void API::addFunction(std::unique_ptr<APIFunction> func) {

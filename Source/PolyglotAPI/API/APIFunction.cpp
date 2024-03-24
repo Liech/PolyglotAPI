@@ -8,6 +8,10 @@ namespace PolyglotAPI {
     _func = func;
   }
 
+  APIFunction::~APIFunction() {
+
+  }
+
   void APIFunction::setDescription(const std::string& desc) {
     _description = desc;
   }

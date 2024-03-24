@@ -8,10 +8,10 @@ namespace pybind11 {
 
 namespace PolyglotAPI {
   namespace Python {
-    class FunctionRelay : public PolyglotAPI::FunctionRelay {
+    class __declspec(dllexport) FunctionRelay : public PolyglotAPI::FunctionRelay {
       public:
       FunctionRelay();
-      virtual ~FunctionRelay() = default;
+      virtual ~FunctionRelay();
 
       virtual nlohmann::json call(size_t id, const nlohmann::json&) override;
 

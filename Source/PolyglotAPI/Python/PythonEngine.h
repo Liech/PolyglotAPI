@@ -16,7 +16,7 @@ namespace pybind11 {
 
 namespace PolyglotAPI {
   namespace Python {
-    class PythonEngine {
+    class __declspec(dllexport) PythonEngine {
       public:
       static PythonEngine& instance();
       virtual ~PythonEngine();

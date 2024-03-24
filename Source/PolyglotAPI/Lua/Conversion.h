@@ -8,7 +8,7 @@ namespace PolyglotAPI {
   namespace Lua {
     class FunctionRelay;
 
-    class Conversion {
+    class __declspec(dllexport) Conversion {
       public:
       Conversion(lua_State*, Lua::FunctionRelay&);
 

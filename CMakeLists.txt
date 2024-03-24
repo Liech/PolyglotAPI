@@ -67,7 +67,7 @@ set(ALL_FILES
 ############################################################################
 
 
-add_library(PolyglotAPI ${ALL_FILES})
+add_library(PolyglotAPI SHARED ${ALL_FILES})
 set_property(TARGET PolyglotAPI PROPERTY CXX_STANDARD 20)
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
@@ -109,3 +109,7 @@ pybind11::headers
 )
 
 set_target_properties(PolyglotAPI PROPERTIES FOLDER "PolyglotAPI")
+set_target_properties(PolyglotAPI
+    PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/$<CONFIG>
+)

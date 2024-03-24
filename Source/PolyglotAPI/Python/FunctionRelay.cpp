@@ -26,6 +26,10 @@ namespace PolyglotAPI {
       _pimpl = std::make_unique<FunctionRelay::pimpl>();
     }
 
+    FunctionRelay::~FunctionRelay() {
+
+    }
+
     nlohmann::json FunctionRelay::call(size_t id, const nlohmann::json& input) {
       //https://github.com/pybind/pybind11/discussions/3450
       return Conversion::py2j(_pimpl->functionMap[id](Conversion::j2py(input)), *this);
