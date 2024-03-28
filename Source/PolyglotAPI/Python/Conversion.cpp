@@ -7,14 +7,18 @@
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>
 
+#include <iostream>
+
 namespace PolyglotAPI {
   namespace Python {
     nlohmann::json Conversion::py2j(const pybind11::object& input, Python::FunctionRelay& relay) {
       //maybe this is a better way if it would work: https://github.com/pybind/pybind11/issues/1914
       auto typ = input.get_type().str().cast<std::string>();
-
+      //std::cout << typ << std::endl;
       if (typ == "<class 'float'>")
         return input.cast<float>();
+      else if (typ == "<class 'numpy.float64'>")
+        return input.cast<double>();
       else if (typ == "<class 'int'>")
         return input.cast<int>();
       else if (typ == "<class 'str'>")
