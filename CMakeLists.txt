@@ -4,25 +4,13 @@ project(PolyglotAPI)
 
 find_package(nlohmann_json REQUIRED)
 find_package(Lua REQUIRED)
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Embed)
 find_package(pybind11 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
 
 ############################################################################
 ############################################################################
 ############################################################################
-
-set(Api_Files
-    "Source/PolyglotAPI/API/API.h"
-    "Source/PolyglotAPI/API/API.cpp"
-    "Source/PolyglotAPI/API/APIFunction.h"
-    "Source/PolyglotAPI/API/APIFunction.cpp"
-    "Source/PolyglotAPI/API/FunctionRelay.h"
-    "Source/PolyglotAPI/API/FunctionRelay.cpp"
-    "Source/PolyglotAPI/API/TestFunctionRelay.cpp"
-    "Source/PolyglotAPI/API/TestFunctionRelay.h"
-)
-source_group("Api" FILES ${Api_Files})
 
 set(Lua_Files
     "Source/PolyglotAPI/Lua/LuaEngine.h"
@@ -33,12 +21,10 @@ set(Lua_Files
 source_group("Lua" FILES ${Lua_Files})
 
 set(Python_Files
-    "Source/PolyglotAPI/Python/PythonEngine.cpp"
-    "Source/PolyglotAPI/Python/FunctionRelay.cpp"
-    "Source/PolyglotAPI/Python/Conversion.cpp"
     "Source/PolyglotAPI/Python/PythonEngine.h"
-    "Source/PolyglotAPI/Python/FunctionRelay.h"
+    "Source/PolyglotAPI/Python/PythonEngine.cpp"
     "Source/PolyglotAPI/Python/Conversion.h"
+    "Source/PolyglotAPI/Python/Conversion.cpp"
 )
 source_group("Python" FILES ${Python_Files})
 
@@ -52,7 +38,6 @@ source_group("" FILES ${main_Files})
 set(ALL_FILES
     ${Lua_Files}
     ${Python_Files}
-    ${Api_Files}
     ${main_Files}
 )
 
@@ -62,7 +47,7 @@ set(ALL_FILES
 
 add_library(PolyglotDependencies INTERFACE)
 
-add_library(PolyglotAPI STATIC ${ALL_FILES})
+add_library(PolyglotAPI SHARED ${ALL_FILES})
 add_executable(PolyglotAPITest ${ALL_FILES})
 
 set_property(TARGET PolyglotAPI PROPERTY CXX_STANDARD 23)
@@ -73,7 +58,7 @@ target_link_libraries(PolyglotDependencies INTERFACE
     nlohmann_json::nlohmann_json
     ${LUA_LIBRARIES}
     Python3::Python
-    pybind11::headers
+    pybind11::module
 )
 target_link_libraries(PolyglotAPI PUBLIC PolyglotDependencies)
 target_link_libraries(PolyglotAPITest PRIVATE PolyglotDependencies Catch2::Catch2WithMain)
@@ -85,3 +70,31 @@ target_include_directories(PolyglotDependencies INTERFACE
 )
 
 set_property( TARGET PolyglotAPITest PROPERTY COMPILE_DEFINITIONS ISTESTPROJECT=1 )
+
+
+
+############################################################################
+
+get_filename_component(PYTHON_ROOT "${Python3_EXECUTABLE}" DIRECTORY)
+set(PY_DLL_NAME "python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll")
+
+add_custom_command(
+    TARGET PolyglotAPITest POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPITest>/Lib"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPITest>/DLLs"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/${PY_DLL_NAME}" "$<TARGET_FILE_DIR:PolyglotAPITest>/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/Lib" "$<TARGET_FILE_DIR:PolyglotAPITest>/Lib"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/DLLs" "$<TARGET_FILE_DIR:PolyglotAPITest>/DLLs"
+    COMMENT "Synch Python Runtime for PolyglotAPITest..."
+    VERBATIM
+)
+add_custom_command(
+    TARGET PolyglotAPI POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPI>/Lib"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPI>/DLLs"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/${PY_DLL_NAME}" "$<TARGET_FILE_DIR:PolyglotAPI>/"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/Lib" "$<TARGET_FILE_DIR:PolyglotAPI>/Lib"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/DLLs" "$<TARGET_FILE_DIR:PolyglotAPI>/DLLs"
+    COMMENT "Synch Python Runtime for PolyglotAPI..."
+    VERBATIM
+)

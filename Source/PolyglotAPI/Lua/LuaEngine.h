@@ -14,7 +14,7 @@ namespace PolyglotAPI
 
     namespace Lua
     {
-        class LuaEngine
+        class __declspec(dllexport) LuaEngine
         {
           public:
             LuaEngine();

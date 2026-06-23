@@ -4,12 +4,6 @@
 #include <nlohmann/json.hpp>
 #include <vector>
 
-namespace PolyglotAPI
-{
-    class API;
-    class APIFunction;
-    class FunctionRelay;
-}
 namespace pybind11
 {
     class object;
@@ -18,35 +12,24 @@ namespace pybind11
 
 namespace PolyglotAPI
 {
+    class Node;
+
     namespace Python
     {
         class __declspec(dllexport) PythonEngine
         {
           public:
-            static PythonEngine& instance();
+            PythonEngine();
             virtual ~PythonEngine();
 
-            void addAPI(std::shared_ptr<API>);
-            void initialize();
-            void dispose();
-
-            void execute(const std::string& pythonCode);
+            void executeString(const std::string& str);
             void executeFile(const std::string& filename);
 
-            size_t                      numberOfApis() const;
-            API&                        getAPI(size_t number);
-            PolyglotAPI::FunctionRelay& getRelay();
-
-            void                                                                  addCustomFunction(const std::string& name, std::function<void(pybind11::module_&)> fun);
-            const std::map<std::string, std::function<void(pybind11::module_&)>>& getCustomFunctions() const;
+            void setVar(const std::string& name, const Node& value);
+            Node getVar(const std::string& name);
 
           private:
-            PythonEngine();
-
-            bool _initialized = false;
-
-            class pimpl;
-            std::unique_ptr<pimpl> _pimpl;
+            inline static std::atomic<int> instanceCount = 0;
         };
     }
 }

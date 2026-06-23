@@ -120,32 +120,41 @@ namespace PolyglotAPI
           value);
     }
 
-    Node::operator bool() const
+    double Node::as_double() const
     {
-        if (auto val = std::get_if<bool>(&value))
+        if (auto val = std::get_if<double>(&value))
             return *val;
-        throw std::runtime_error("Invalid Type");
+        if (auto val = std::get_if<float>(&value))
+            return static_cast<double>(*val);
+        if (auto val = std::get_if<int>(&value))
+            return static_cast<double>(*val);
+        if (auto val = std::get_if<bool>(&value))
+            return *val ? 1.0 : 0.0;
+
+        throw std::runtime_error("Node does not contain a numeric type");
     }
 
     Node::operator double() const
     {
-        if (auto val = std::get_if<double>(&value))
-            return *val;
-        throw std::runtime_error("Invalid Type");
-    }
-
-    Node::operator int() const
-    {
-        if (auto val = std::get_if<int>(&value))
-            return *val;
-        throw std::runtime_error("Invalid Type");
+        return as_double();
     }
 
     Node::operator float() const
     {
-        if (auto val = std::get_if<float>(&value))
+        return static_cast<float>(as_double());
+    }
+
+    Node::operator int() const
+    {
+        return static_cast<int>(as_double());
+    }
+
+    Node::operator bool() const
+    {
+        if (auto val = std::get_if<bool>(&value))
             return *val;
-        throw std::runtime_error("Invalid Type");
+        // Optional: Numerische Werte als bool interpretieren (0 = false, sonst true)
+        return as_double() != 0.0;
     }
 
     Node::operator std::string() const

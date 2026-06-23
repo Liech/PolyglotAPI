@@ -1,169 +1,122 @@
 #include "PythonEngine.h"
 
 #include "Conversion.h"
-#include "FunctionRelay.h"
-
-#include "PolyglotAPI/API/API.h"
-#include "PolyglotAPI/API/APIFunction.h"
-#include "PolyglotAPI/API/FunctionRelay.h"
-
-#include <Python.h>
-#include <pybind11/complex.h>
+#include "PolyglotAPI/Node.h"
+#include <atomic>
 #include <pybind11/embed.h>
-#include <pybind11/numpy.h>
-#include <pybind11/stl.h>
 
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-
-namespace PolyglotAPI
+namespace PolyglotAPI::Python
 {
-    namespace Python
+    PythonEngine::PythonEngine()
     {
-        class PythonEngine::pimpl
+        if (instanceCount++ == 0)
         {
-          public:
-            pybind11::module_                                              mainModule;
-            std::unique_ptr<Python::FunctionRelay>                         relay = nullptr;
-            std::vector<std::shared_ptr<API>>                              _apis;
-            std::map<std::string, std::function<void(pybind11::module_&)>> customFunctions;
-        };
-
-        PythonEngine& PythonEngine::instance()
-        {
-            static PythonEngine engine;
-            return engine;
+            pybind11::initialize_interpreter();
         }
+    }
 
-        PythonEngine::~PythonEngine()
+    PythonEngine::~PythonEngine()
+    {
+        if (--instanceCount == 0)
         {
-            if (_initialized)
-                std::cout << "Please dispose() the PythonEngine correctly" << std::endl;
-        }
-
-        PythonEngine::PythonEngine()
-        {
-            _pimpl        = std::make_unique<PythonEngine::pimpl>();
-            _pimpl->relay = std::make_unique<Python::FunctionRelay>();
-        }
-
-        // pybind11::array_t<int> get_indices(int& g) {
-        //   // an empty capsule
-        //   return pybind11::array_t<int>{5, g.indices, pybind11::capsule{}};
-        // }
-
-        PYBIND11_EMBEDDED_MODULE(PolyglotModule, m)
-        {
-            PythonEngine& engine = PythonEngine::instance();
-
-            for (size_t apiID = 0; apiID < engine.numberOfApis(); apiID++)
-            {
-                auto& api = engine.getAPI(apiID);
-                for (size_t f = 0; f < api.numberOfFunctions(); f++)
-                {
-                    auto& func = api.getFunction(f);
-                    m.def(
-                      func.getName().c_str(),
-                      [&func](const pybind11::object& input)
-                      {
-                          auto& r = (Python::FunctionRelay&)PythonEngine::instance().getRelay();
-                          return Conversion::j2py(func.call(Conversion::py2j(input, r)));
-                      },
-                      pybind11::arg("input") = pybind11::none());
-                }
-            }
-            for (auto& func : engine.getCustomFunctions())
-            {
-                func.second(m);
-            }
-        }
-
-        void PythonEngine::initialize()
-        {
-            assert(!_initialized);
-            _initialized = true;
-            if (!_pimpl)
-            {
-                _pimpl        = std::make_unique<PythonEngine::pimpl>();
-                _pimpl->relay = std::make_unique<Python::FunctionRelay>();
-            }
-
-            try
-            {
-                Py_SetPythonHome(L"Data/python");
-                pybind11::initialize_interpreter();
-                _pimpl->mainModule = pybind11::module_::import("PolyglotModule");
-            }
-            catch (pybind11::error_already_set& e)
-            {
-                std::cout << e.what() << std::endl;
-                throw;
-            }
-        }
-
-        void PythonEngine::execute(const std::string& pythonCode)
-        {
-            try
-            {
-                auto locals = pybind11::dict(**_pimpl->mainModule.attr("__dict__"));
-                pybind11::exec(pythonCode, pybind11::globals(), locals);
-            }
-            catch (pybind11::error_already_set& e)
-            {
-                std::cout << e.what() << std::endl;
-                throw;
-            }
-        }
-
-        void PythonEngine::executeFile(const std::string& filename)
-        {
-            if (!std::filesystem::exists(filename))
-                throw std::runtime_error("File not found!");
-
-            std::ifstream t(filename);
-            std::string   str((std::istreambuf_iterator<char>(t)), std::istreambuf_iterator<char>());
-            execute(str);
-        }
-
-        void PythonEngine::dispose()
-        {
-            assert(_initialized);
-            _pimpl = nullptr;
             pybind11::finalize_interpreter();
-            _initialized = false;
         }
+    }
 
-        void PythonEngine::addAPI(std::shared_ptr<API> api)
-        {
-            assert(!_initialized);
-            _pimpl->_apis.push_back(api);
-        }
+    void PythonEngine::executeString(const std::string& str)
+    {
+        pybind11::gil_scoped_acquire acquire;
+        pybind11::exec(str);
+    }
+    
+    void PythonEngine::executeFile(const std::string& filename)
+    {
+        pybind11::gil_scoped_acquire acquire;
+        pybind11::eval_file(filename, pybind11::globals());
+    }
 
-        size_t PythonEngine::numberOfApis() const
-        {
-            return _pimpl->_apis.size();
-        }
+    void PythonEngine::setVar(const std::string& name, const Node& value)
+    {
+        pybind11::gil_scoped_acquire acquire;
+        pybind11::globals()[name.c_str()] = Conversion::node2py(value);
+    }
 
-        API& PythonEngine::getAPI(size_t number)
-        {
-            return *_pimpl->_apis[number];
-        }
-
-        PolyglotAPI::FunctionRelay& PythonEngine::getRelay()
-        {
-            return *_pimpl->relay;
-        }
-
-        void PythonEngine::addCustomFunction(const std::string& name, std::function<void(pybind11::module_&)> fun)
-        {
-            _pimpl->customFunctions[name] = fun;
-        }
-
-        const std::map<std::string, std::function<void(pybind11::module_&)>>& PythonEngine::getCustomFunctions() const
-        {
-            return _pimpl->customFunctions;
-        }
-
+    Node PythonEngine::getVar(const std::string& name)
+    {
+        pybind11::gil_scoped_acquire acquire;
+        return Conversion::py2node(pybind11::globals()[name.c_str()]);
     }
 }
+
+
+#ifdef ISTESTPROJECT
+#include <catch2/catch_test_macros.hpp>
+
+using namespace PolyglotAPI;
+
+TEST_CASE("PythonEngine: Simple", "[PythonEngine]")
+{
+    PolyglotAPI::Python::PythonEngine engine;
+
+    engine.setVar("a", 10.0);
+    engine.executeString("b = a + 5");
+
+    Node res = engine.getVar("b");
+    REQUIRE(static_cast<double>(res) == 15.0);
+}
+
+TEST_CASE("PythonEngine: List&Dict", "[PythonEngine]")
+{
+    PolyglotAPI::Python::PythonEngine engine;
+
+    Node n;
+    n["key"] = "value";
+
+    engine.setVar("myDict", n);
+    engine.executeString("myList = [myDict['key'], 'test']");
+
+    Node res = engine.getVar("myList");
+    auto vec = std::get<std::vector<Node>>(res.value);
+
+    REQUIRE(static_cast<std::string>(vec[0]) == "value");
+    REQUIRE(static_cast<std::string>(vec[1]) == "test");
+}
+
+TEST_CASE("PythonEngine: Callback C++ -> Python", "[PythonEngine]")
+{
+    PolyglotAPI::Python::PythonEngine engine;
+
+    std::function<Node(const Node&)> cb = [](const Node& arg) -> Node { return static_cast<double>(arg) * 2.0; };
+
+    engine.setVar("pyCallback", cb);
+    engine.executeString("result = pyCallback(21)");
+
+    Node res = engine.getVar("result");
+    REQUIRE(static_cast<double>(res) == 42.0);
+}
+
+TEST_CASE("PythonEngine: Callback Python -> C++", "[PythonEngine]")
+{
+    PolyglotAPI::Python::PythonEngine engine;
+
+    engine.executeString("def my_adder(x): return x + 10");
+    Node func = engine.getVar("my_adder");
+
+    Node res = func(5.0);
+    REQUIRE(static_cast<double>(res) == 15.0);
+}
+
+TEST_CASE("PythonEngine: Instances", "[PythonEngine]")
+{
+    // more a warning then a test!
+
+    PolyglotAPI::Python::PythonEngine engine1;
+    PolyglotAPI::Python::PythonEngine engine2;
+
+    engine1.setVar("x", 1.0);
+    engine2.setVar("x", 100.0);
+
+    REQUIRE(static_cast<double>(engine1.getVar("x")) == 100.0);
+}
+
+#endif

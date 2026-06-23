@@ -1,7 +1,5 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
-
 namespace pybind11
 {
     class object;
@@ -9,16 +7,15 @@ namespace pybind11
 
 namespace PolyglotAPI
 {
+    class Node;
 
     namespace Python
     {
-        class FunctionRelay;
-
-        class __declspec(dllexport) Conversion
+        class Conversion
         {
           public:
-            static nlohmann::json   py2j(const pybind11::object&, Python::FunctionRelay&);
-            static pybind11::object j2py(const nlohmann::json&);
+            static Node             py2node(const pybind11::object&);
+            static pybind11::object node2py(const Node&);
         };
     }
 }

@@ -11,7 +11,7 @@ namespace PolyglotAPI
     class Node
     {
       public:
-        std::variant<std::nullptr_t, bool,int, double, float, std::string, std::map<std::string, Node>, std::vector<Node>, std::function<Node(const Node&)>> value;
+        std::variant<std::nullptr_t, bool, int, double, float, std::string, std::map<std::string, Node>, std::vector<Node>, std::function<Node(const Node&)>> value;
 
         Node();
         Node(bool b);
@@ -36,5 +36,8 @@ namespace PolyglotAPI
         Node           operator()(const Node& arg);
         Node&          operator[](const std::string& key);
         nlohmann::json toJson() const;
+
+      private:
+        double as_double() const;
     };
 }
