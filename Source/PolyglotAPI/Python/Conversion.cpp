@@ -2,7 +2,7 @@
 
 #include "FunctionRelay.h"
 
-#include <python3.10/Python.h>
+#include <Python.h>
 #include <pybind11/embed.h>
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>

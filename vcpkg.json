@@ -4,6 +4,7 @@
   "dependencies": [
     "nlohmann-json",
 	"lua",
-	"pybind11"
+	"pybind11",
+	"catch2"
   ]
 }

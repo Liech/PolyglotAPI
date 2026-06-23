@@ -3,11 +3,11 @@
 #include "FunctionRelay.h"
 #include "Conversion.h"
 
-#include "API/API.h"
-#include "API/APIFunction.h"
-#include "API/FunctionRelay.h"
+#include "PolyglotAPI/API/API.h"
+#include "PolyglotAPI/API/APIFunction.h"
+#include "PolyglotAPI/API/FunctionRelay.h"
 
-#include <python3.10/Python.h>
+#include <Python.h>
 #include <pybind11/embed.h>
 #include <pybind11/stl.h>
 #include <pybind11/complex.h>

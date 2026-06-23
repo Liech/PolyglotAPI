@@ -6,8 +6,8 @@
 #include <iostream>
 #include <nlohmann/json.hpp>
 
-#include "API/API.h"
-#include "API/APIFunction.h"
+#include "PolyglotAPI/API/API.h"
+#include "PolyglotAPI/API/APIFunction.h"
 
 #include "Conversion.h"
 #include "FunctionRelay.h"
