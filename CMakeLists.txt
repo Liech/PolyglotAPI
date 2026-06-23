@@ -2,11 +2,22 @@ cmake_minimum_required(VERSION 3.24...4.0.2)
 
 project(PolyglotAPI)
 
+option(ENABLE_PYTHON "Polyglot Python" ON)
+option(ENABLE_LUA "Polyglot Lua" ON)
+
+############################################################################
+
 find_package(nlohmann_json REQUIRED)
-find_package(Lua REQUIRED)
-find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Embed)
-find_package(pybind11 CONFIG REQUIRED)
 find_package(Catch2 CONFIG REQUIRED)
+
+if(ENABLE_LUA)
+  find_package(Lua REQUIRED)
+endif()
+
+if(ENABLE_PYTHON)
+  find_package(Python3 REQUIRED COMPONENTS Interpreter Development.Embed)
+  find_package(pybind11 CONFIG REQUIRED)
+endif()
 
 ############################################################################
 ############################################################################
@@ -36,10 +47,16 @@ set(main_Files
 source_group("" FILES ${main_Files})
 
 set(ALL_FILES
-    ${Lua_Files}
-    ${Python_Files}
     ${main_Files}
 )
+
+if(ENABLE_LUA)
+    list(APPEND ALL_FILES ${Lua_Files})
+endif()
+
+if(ENABLE_PYTHON)
+    list(APPEND ALL_FILES ${Python_Files})
+endif()
 
 ############################################################################
 ############################################################################
@@ -53,48 +70,54 @@ add_executable(PolyglotAPITest ${ALL_FILES})
 set_property(TARGET PolyglotAPI PROPERTY CXX_STANDARD 23)
 set_property(TARGET PolyglotAPITest PROPERTY CXX_STANDARD 23)
 
-
 target_link_libraries(PolyglotDependencies INTERFACE
     nlohmann_json::nlohmann_json
-    ${LUA_LIBRARIES}
-    Python3::Python
-    pybind11::module
 )
-target_link_libraries(PolyglotAPI PUBLIC PolyglotDependencies)
-target_link_libraries(PolyglotAPITest PRIVATE PolyglotDependencies Catch2::Catch2WithMain)
-
 target_include_directories(PolyglotDependencies INTERFACE 
     "${CMAKE_CURRENT_SOURCE_DIR}/Source"
-    ${LUA_INCLUDE_DIR}
-    ${Python3_INCLUDE_DIRS}
 )
+if(ENABLE_LUA)
+    target_link_libraries(PolyglotDependencies INTERFACE ${LUA_LIBRARIES})
+    target_include_directories(PolyglotDependencies INTERFACE ${LUA_INCLUDE_DIR})
+endif()
+if(ENABLE_PYTHON)
+    target_link_libraries(PolyglotDependencies INTERFACE
+        Python3::Python
+        pybind11::module
+    )
+    target_include_directories(PolyglotDependencies INTERFACE ${Python3_INCLUDE_DIRS})
+endif()
+
+target_link_libraries(PolyglotAPI PUBLIC PolyglotDependencies)
+target_link_libraries(PolyglotAPITest PRIVATE PolyglotDependencies Catch2::Catch2WithMain)
 
 set_property( TARGET PolyglotAPITest PROPERTY COMPILE_DEFINITIONS ISTESTPROJECT=1 )
 
 
-
 ############################################################################
 
-get_filename_component(PYTHON_ROOT "${Python3_EXECUTABLE}" DIRECTORY)
-set(PY_DLL_NAME "python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll")
-
-add_custom_command(
-    TARGET PolyglotAPITest POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPITest>/Lib"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPITest>/DLLs"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/${PY_DLL_NAME}" "$<TARGET_FILE_DIR:PolyglotAPITest>/"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/Lib" "$<TARGET_FILE_DIR:PolyglotAPITest>/Lib"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/DLLs" "$<TARGET_FILE_DIR:PolyglotAPITest>/DLLs"
-    COMMENT "Synch Python Runtime for PolyglotAPITest..."
-    VERBATIM
-)
-add_custom_command(
-    TARGET PolyglotAPI POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPI>/Lib"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPI>/DLLs"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/${PY_DLL_NAME}" "$<TARGET_FILE_DIR:PolyglotAPI>/"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/Lib" "$<TARGET_FILE_DIR:PolyglotAPI>/Lib"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/DLLs" "$<TARGET_FILE_DIR:PolyglotAPI>/DLLs"
-    COMMENT "Synch Python Runtime for PolyglotAPI..."
-    VERBATIM
-)
+if(ENABLE_PYTHON)
+  get_filename_component(PYTHON_ROOT "${Python3_EXECUTABLE}" DIRECTORY)
+  set(PY_DLL_NAME "python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR}.dll")
+  
+  add_custom_command(
+      TARGET PolyglotAPITest POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPITest>/Lib"
+      COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPITest>/DLLs"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/${PY_DLL_NAME}" "$<TARGET_FILE_DIR:PolyglotAPITest>/"
+      COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/Lib" "$<TARGET_FILE_DIR:PolyglotAPITest>/Lib"
+      COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/DLLs" "$<TARGET_FILE_DIR:PolyglotAPITest>/DLLs"
+      COMMENT "Synch Python Runtime for PolyglotAPITest..."
+      VERBATIM
+  )
+  add_custom_command(
+      TARGET PolyglotAPI POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPI>/Lib"
+      COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:PolyglotAPI>/DLLs"
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different "${PYTHON_ROOT}/${PY_DLL_NAME}" "$<TARGET_FILE_DIR:PolyglotAPI>/"
+      COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/Lib" "$<TARGET_FILE_DIR:PolyglotAPI>/Lib"
+      COMMAND ${CMAKE_COMMAND} -E copy_directory "${PYTHON_ROOT}/DLLs" "$<TARGET_FILE_DIR:PolyglotAPI>/DLLs"
+      COMMENT "Synch Python Runtime for PolyglotAPI..."
+      VERBATIM
+  )
+endif()
