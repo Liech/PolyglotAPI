@@ -2,81 +2,54 @@
 
 #include <iostream>
 #include <lua.hpp>
-#include <nlohmann/json.hpp>
 #include <sstream>
 #include <stdexcept>
 
-#include "PolyglotAPI/API/API.h"
-#include "PolyglotAPI/API/APIFunction.h"
+#include "PolyglotAPI/Node.h"
 
 #include "Conversion.h"
-#include "FunctionRelay.h"
 
 namespace PolyglotAPI
 {
     namespace Lua
     {
-        class LuaEngine::pimpl
-        {
-          public:
-            lua_State*                                                        _state = nullptr;
-            std::unique_ptr<Lua::Conversion>                                  _conversion;
-            std::vector<std::function<nlohmann::json(const nlohmann::json&)>> _registry;
-            std::vector<std::shared_ptr<API>>                                 _apis;
-        };
-
         LuaEngine::LuaEngine()
         {
             initialize();
         }
 
-        void LuaEngine::addApi(std::shared_ptr<API> api)
+        LuaEngine::~LuaEngine()
         {
-            int apiIndex = _pimpl->_apis.size();
-            for (size_t i = 0; i < api->numberOfFunctions(); i++)
-            {
-                auto fun = api->getFunction(i);
-                registerFunction(fun.getName(), [this, i, apiIndex](const nlohmann::json& input) { return _pimpl->_apis[apiIndex]->getFunction(i).call(input); });
-            }
-            _pimpl->_apis.push_back(api);
+            lua_close(state);
         }
 
         void LuaEngine::initialize()
         {
-            _pimpl              = std::make_unique<Lua::LuaEngine::pimpl>();
-            _pimpl->_state      = luaL_newstate();
-            _relay              = std::make_unique<Lua::FunctionRelay>(_pimpl->_state);
-            _pimpl->_conversion = std::make_unique<Lua::Conversion>(_pimpl->_state, *_relay);
-
-            luaL_openlibs(_pimpl->_state);
-        }
-
-        LuaEngine::~LuaEngine()
-        {
-            lua_close(_pimpl->_state);
+            state = luaL_newstate();
+            luaL_openlibs(state);
         }
 
         void LuaEngine::executeFile(const std::string& filename)
         {
-            if (luaL_loadfile(_pimpl->_state, filename.c_str()) == LUA_OK)
+            if (luaL_loadfile(state, filename.c_str()) == LUA_OK)
             {
-                int returnCode = lua_pcall(_pimpl->_state, 0, LUA_MULTRET, 0);
+                int returnCode = lua_pcall(state, 0, LUA_MULTRET, 0);
                 if (returnCode != LUA_OK)
                 {
-                    std::cout << lua_tostring(_pimpl->_state, -1) << std::endl;
+                    std::cout << lua_tostring(state, -1) << std::endl;
                     throw std::runtime_error("Error in call");
                 }
             }
             else
             {
-                std::cout << lua_tostring(_pimpl->_state, -1) << std::endl;
+                std::cout << lua_tostring(state, -1) << std::endl;
                 throw std::runtime_error("File not found or Syntax Error");
             }
         }
 
         void LuaEngine::executeString(const std::string& str)
         {
-            int returnCode = luaL_dostring(_pimpl->_state, str.c_str());
+            int returnCode = luaL_dostring(state, str.c_str());
             if (returnCode != LUA_OK)
             {
                 std::string        lined   = "";
@@ -90,164 +63,203 @@ namespace PolyglotAPI
                 }
 
                 std::cout << lined << std::endl;
-                std::cout << lua_tostring(_pimpl->_state, -1) << std::endl;
+                std::cout << lua_tostring(state, -1) << std::endl;
                 throw std::runtime_error("Error in call");
             }
         }
 
-        void LuaEngine::registerFunction(const std::string& name, std::function<nlohmann::json(const nlohmann::json&)> call)
-        {
-            // https://stackoverflow.com/questions/61071267/how-to-reference-this-in-a-lambda-used-with-a-lua-script
-            _pimpl->_registry.push_back(call);
-
-            int regpos = _pimpl->_registry.size() - 1;
-
-            auto callFunction = [](lua_State* L) -> int
-            {
-                LuaEngine::pimpl* This = (LuaEngine::pimpl*)lua_topointer(L, lua_upvalueindex(1));
-                int               pos  = (int)lua_topointer(L, lua_upvalueindex(2));
-
-                nlohmann::json input;
-                nlohmann::json output;
-
-                This->_conversion->toJson(input);
-                output = This->_registry[pos](input);
-                This->_conversion->toTable(output);
-                return 1;
-            };
-
-            lua_pushlightuserdata(_pimpl->_state, &(*_pimpl));
-            lua_pushlightuserdata(_pimpl->_state, (void*)regpos);
-            lua_pushcclosure(_pimpl->_state, callFunction, 2);
-            lua_setglobal(_pimpl->_state, name.c_str());
-        }
-
-        nlohmann::json LuaEngine::callScript(const std::string& name, const nlohmann::json& input)
-        {
-            nlohmann::json result;
-            lua_getglobal(_pimpl->_state, name.c_str());
-            _pimpl->_conversion->toTable(input);
-            int returnCode = lua_pcall(_pimpl->_state, 1, 1, 0);
-            if (returnCode != LUA_OK)
-            {
-                // dumpGlobalVariables(true);
-                std::cout << lua_tostring(_pimpl->_state, -1) << std::endl;
-                throw std::runtime_error("script call error");
-            }
-            _pimpl->_conversion->toJson(result);
-            lua_pop(_pimpl->_state, 1);
-            return result;
-        }
-
         void LuaEngine::dumpGlobalVariables(bool fullPrint)
         {
-            lua_pushglobaltable(_pimpl->_state); // Get global table
-            lua_pushnil(_pimpl->_state);         // put a nil key on stack
-            while (lua_next(_pimpl->_state, -2) != 0)
-            {                                                               // key(-1) is replaced by the next key(-1) in table(-2)
-                std::cout << lua_tostring(_pimpl->_state, -2) << std::endl; // Get key(-2) name
+            lua_pushglobaltable(state); // Get global table
+            lua_pushnil(state);         // put a nil key on stack
+            while (lua_next(state, -2) != 0)
+            {                                                      // key(-1) is replaced by the next key(-1) in table(-2)
+                std::cout << lua_tostring(state, -2) << std::endl; // Get key(-2) name
                 if (fullPrint)
                     printTop(1);
-                lua_pop(_pimpl->_state, 1); // remove value(-1), now key on top at(-1)
+                lua_pop(state, 1); // remove value(-1), now key on top at(-1)
             }
-            lua_pop(_pimpl->_state, 1); // remove global table(-1)
+            lua_pop(state, 1); // remove global table(-1)
         }
 
         void LuaEngine::printTop(int indentation)
         {
+            Conversion  conversion(state);
             std::string indent = "";
             for (int i = 0; i < indentation; i++)
                 indent += " ";
 
-            if (!lua_istable(_pimpl->_state, -1))
+            if (!lua_istable(state, -1))
             {
-                if (lua_isstring(_pimpl->_state, -1))
+                if (lua_isstring(state, -1))
                 {
-                    std::cout << indent << _pimpl->_conversion->popStr(-1) << std::endl;
+                    std::cout << indent << conversion.popStr(-1) << std::endl;
                 }
-                else if (lua_isnumber(_pimpl->_state, -1))
+                else if (lua_isnumber(state, -1))
                 {
-                    std::cout << indent << lua_tonumber(_pimpl->_state, -1) << std::endl;
+                    std::cout << indent << lua_tonumber(state, -1) << std::endl;
                 }
-                else if (lua_isboolean(_pimpl->_state, -1))
+                else if (lua_isboolean(state, -1))
                 {
-                    std::cout << indent << lua_toboolean(_pimpl->_state, -1) << std::endl;
+                    std::cout << indent << lua_toboolean(state, -1) << std::endl;
                 }
                 else
                     std::cout << indent << "UNKOWN" << std::endl;
                 return;
             }
 
-            lua_pushnil(_pimpl->_state); /* first key */
+            lua_pushnil(state); /* first key */
             int amount = 0;
-            while (lua_next(_pimpl->_state, -2) != 0)
+            while (lua_next(state, -2) != 0)
             {
-                if (lua_isstring(_pimpl->_state, -1))
+                if (lua_isstring(state, -1))
                 {
-                    std::cout << indent << _pimpl->_conversion->popStr(-2) << ": " << _pimpl->_conversion->popStr(-1) << std::endl;
+                    std::cout << indent << conversion.popStr(-2) << ": " << conversion.popStr(-1) << std::endl;
                 }
-                else if (lua_isnumber(_pimpl->_state, -1))
+                else if (lua_isnumber(state, -1))
                 {
-                    std::cout << indent << _pimpl->_conversion->popStr(-2) << ": " << lua_tonumber(_pimpl->_state, -1) << std::endl;
+                    std::cout << indent << conversion.popStr(-2) << ": " << lua_tonumber(state, -1) << std::endl;
                 }
-                else if (lua_isboolean(_pimpl->_state, -1))
+                else if (lua_isboolean(state, -1))
                 {
-                    std::cout << indent << _pimpl->_conversion->popStr(-2) << ": " << lua_toboolean(_pimpl->_state, -1) << std::endl;
+                    std::cout << indent << conversion.popStr(-2) << ": " << lua_toboolean(state, -1) << std::endl;
                 }
-                else if (lua_istable(_pimpl->_state, -1))
+                else if (lua_istable(state, -1))
                 {
                     printTop(indentation + 1);
                 }
                 else
                     std::cout << indent << "UNKOWN" << std::endl;
-                lua_pop(_pimpl->_state, 1);
+                lua_pop(state, 1);
             }
         }
 
-        void LuaEngine::setVar(const std::string& name, const nlohmann::json& value)
+        void LuaEngine::setVar(const std::string& name, const Node& value)
         {
-            _pimpl->_conversion->toTable(value);
-            lua_setglobal(_pimpl->_state, name.c_str());
+            Conversion conversion(state);
+            conversion.toTable(value);
+            lua_setglobal(state, name.c_str());
         }
 
-        nlohmann::json LuaEngine::getVar(const std::string& name)
+        Node LuaEngine::getVar(const std::string& name)
         {
-            lua_getglobal(_pimpl->_state, name.c_str());
-            nlohmann::json result;
-            _pimpl->_conversion->toJson(result);
-            lua_pop(_pimpl->_state, 1);
+            Conversion conversion(state);
+            lua_getglobal(state, name.c_str());
+            Node result = conversion.toNode();
+            lua_pop(state, 1);
             return result;
-        }
-
-        std::string LuaEngine::cleanComments(const std::string& code, char symbol)
-        {
-            std::string        result  = "";
-            std::string        current = "";
-            std::istringstream f(code);
-            size_t             lineNo     = 0;
-            bool               stringOpen = false;
-            while (std::getline(f, current, '\n'))
-            {
-                int i = 0;
-                for (; i < current.size(); i++)
-                {
-                    if (current[i] == '"' || current[i] == '\'')
-                    {
-                        stringOpen = !stringOpen;
-                    }
-                    if (!stringOpen && current[i] == symbol)
-                    {
-                        break;
-                    }
-                }
-                result = result + current.substr(0, i) + "\n";
-            }
-            return result;
-        }
-
-        PolyglotAPI::FunctionRelay& LuaEngine::getRelay()
-        {
-            return *_relay;
         }
     }
 }
+
+
+
+#ifdef ISTESTPROJECT
+#include <catch2/catch_test_macros.hpp>
+
+using namespace PolyglotAPI;
+
+TEST_CASE("LuaEngine: Set/Get var", "[LuaEngine]")
+{
+    PolyglotAPI::Lua::LuaEngine engine;
+
+    Node n_num = 42.0;
+    engine.setVar("myNum", n_num);
+    REQUIRE((double)engine.getVar("myNum") == 42.0);
+
+    Node n_str = "HelloLua";
+    engine.setVar("myStr", n_str);
+    REQUIRE(static_cast<std::string>(engine.getVar("myStr")) == "HelloLua");
+}
+
+TEST_CASE("LuaEngine: Manipulate via Lua", "[LuaEngine]")
+{
+    PolyglotAPI::Lua::LuaEngine engine;
+    engine.setVar("x", 10.0);
+    engine.executeString("x = x + 5");
+    REQUIRE((double)engine.getVar("x") == 15.0);
+}
+
+TEST_CASE("LuaEngine: Table Handling", "[LuaEngine]")
+{
+    PolyglotAPI::Lua::LuaEngine engine;
+
+    Node table;
+    table["a"] = 1.0;
+    table["b"] = 2.0;
+
+    engine.setVar("myTable", table);
+    engine.executeString("sum = myTable.a + myTable.b");
+    Node sum = engine.getVar("sum");
+    REQUIRE(static_cast<double>(sum) == 3.0);
+}
+
+TEST_CASE("LuaEngine: Callback Test", "[LuaEngine]")
+{
+    PolyglotAPI::Lua::LuaEngine engine;
+
+    std::function<Node(const Node& arg)> func = [](const Node& arg) -> Node { return static_cast<double>(arg) * 2.0; };
+    Node                                 cb   = func;
+
+    engine.setVar("myCallback", cb);
+    engine.executeString("result = myCallback(21)");
+    Node res = engine.getVar("result");
+
+    REQUIRE(static_cast<double>(res) == 42.0);
+}
+
+TEST_CASE("LuaEngine: Dynamische Parameter-Übergabe", "[LuaEngine]")
+{
+    PolyglotAPI::Lua::LuaEngine engine;
+
+    std::function<Node(const Node& arg)> func = [](const Node& arg) -> Node
+    {
+        if (std::holds_alternative<std::vector<Node>>(arg.value))
+        {
+            const auto& vec = std::get<std::vector<Node>>(arg.value);
+            return static_cast<double>(vec.size());
+        }
+        return 1.0;
+    };
+
+    engine.setVar("myFunc", func);
+
+    engine.executeString("res1 = myFunc(10)");
+    Node res1 = engine.getVar("res1");
+    REQUIRE(static_cast<double>(res1) == 1.0);
+
+    engine.executeString("res2 = myFunc(10, 20, 30)");
+    Node res2 = engine.getVar("res2");
+    REQUIRE(static_cast<double>(res2) == 3.0);
+}
+
+TEST_CASE("LuaEngine: Summen-Callback mit Vektor-Argumenten", "[LuaEngine]")
+{
+    PolyglotAPI::Lua::LuaEngine engine;
+
+    std::function<Node(const Node& arg)> func = [](const Node& arg) -> Node
+    {
+        double sum = 0;
+        if (std::holds_alternative<std::vector<Node>>(arg.value))
+        {
+            for (const auto& n : std::get<std::vector<Node>>(arg.value))
+            {
+                sum += static_cast<double>(n);
+            }
+        }
+        else
+        {
+            sum = static_cast<double>(arg);
+        }
+        return sum;
+    };
+
+    engine.setVar("sumFunc", func);
+
+    engine.executeString("res = sumFunc(10, 20, 5)");
+    Node res = engine.getVar("res");
+
+    REQUIRE(static_cast<double>(res) == 35.0);
+}
+
+#endif

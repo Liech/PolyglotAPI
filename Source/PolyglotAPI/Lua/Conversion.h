@@ -1,28 +1,27 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
+#include <string>
 
 struct lua_State;
 
 namespace PolyglotAPI
 {
+    class Node;
+
     namespace Lua
     {
-        class FunctionRelay;
-
         class __declspec(dllexport) Conversion
         {
           public:
-            Conversion(lua_State*, Lua::FunctionRelay&);
+            Conversion(lua_State*);
 
-            void        toTable(const nlohmann::json& json);
-            void        toJson(nlohmann::json& json);
+            void        toTable(const Node& json);
+            Node        toNode();
             std::string popStr(int pos);
 
           private:
             void dumpstack(lua_State* L);
 
-            Lua::FunctionRelay& _relay;
             lua_State*          _state;
         };
     }

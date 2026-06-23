@@ -26,11 +26,9 @@ source_group("Api" FILES ${Api_Files})
 
 set(Lua_Files
     "Source/PolyglotAPI/Lua/LuaEngine.h"
-    "Source/PolyglotAPI/Lua/Conversion.h"
-    "Source/PolyglotAPI/Lua/FunctionRelay.h"
     "Source/PolyglotAPI/Lua/LuaEngine.cpp"
+    "Source/PolyglotAPI/Lua/Conversion.h"
     "Source/PolyglotAPI/Lua/Conversion.cpp"
-    "Source/PolyglotAPI/Lua/FunctionRelay.cpp"
 )
 source_group("Lua" FILES ${Lua_Files})
 

@@ -16,6 +16,14 @@ namespace PolyglotAPI
       : value(d)
     {
     }
+    Node::Node(int d)
+      : value(d)
+    {
+    }
+    Node::Node(float d)
+      : value(d)
+    {
+    }
     Node::Node(const std::string& s)
       : value(s)
     {
@@ -122,6 +130,20 @@ namespace PolyglotAPI
     Node::operator double() const
     {
         if (auto val = std::get_if<double>(&value))
+            return *val;
+        throw std::runtime_error("Invalid Type");
+    }
+
+    Node::operator int() const
+    {
+        if (auto val = std::get_if<int>(&value))
+            return *val;
+        throw std::runtime_error("Invalid Type");
+    }
+
+    Node::operator float() const
+    {
+        if (auto val = std::get_if<float>(&value))
             return *val;
         throw std::runtime_error("Invalid Type");
     }

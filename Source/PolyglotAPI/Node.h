@@ -11,11 +11,13 @@ namespace PolyglotAPI
     class Node
     {
       public:
-        std::variant<std::nullptr_t, bool, double, std::string, std::map<std::string, Node>, std::vector<Node>, std::function<Node(const Node&)>> value;
+        std::variant<std::nullptr_t, bool,int, double, float, std::string, std::map<std::string, Node>, std::vector<Node>, std::function<Node(const Node&)>> value;
 
         Node();
         Node(bool b);
         Node(double d);
+        Node(float d);
+        Node(int d);
         Node(const std::string& s);
         Node(const char* s);
         Node(std::function<Node(const Node&)> cb);
@@ -26,6 +28,8 @@ namespace PolyglotAPI
 
         operator bool() const;
         operator double() const;
+        operator float() const;
+        operator int() const;
         operator std::string() const;
         operator nlohmann::json() const;
 
