@@ -49,6 +49,7 @@ set(main_Files
     "Source/PolyglotAPI/testmain.cpp"
     "Source/PolyglotAPI/Node.h"
 )
+source_group("" FILES ${main_Files})
 
 set(ALL_FILES
     ${Lua_Files}
