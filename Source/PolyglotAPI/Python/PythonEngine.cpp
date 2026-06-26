@@ -1,53 +1,76 @@
 #include "PythonEngine.h"
 
 #include "Conversion.h"
-#include "PolyglotAPI/Node.h"
 #include <atomic>
 #include <pybind11/embed.h>
 
 namespace PolyglotAPI::Python
 {
-    PythonEngine::PythonEngine()
+    class PythonEngine::pimpl
     {
-        if (instanceCount++ == 0)
-        {
-            pybind11::initialize_interpreter();
-        }
-    }
+      public:
+        std::unique_ptr<pybind11::dict> globals;
 
-    PythonEngine::~PythonEngine()
-    {
-        if (--instanceCount == 0)
+        static void ensure_interpreter()
         {
-            pybind11::finalize_interpreter();
+            static std::once_flag init_flag;
+            std::call_once(init_flag,
+                           []()
+                           {
+                               std::filesystem::path exe_path   = std::filesystem::current_path();
+                               std::filesystem::path python_dir = exe_path / "python";
+
+#ifdef _WIN32
+                               static std::wstring python_home = python_dir.wstring();
+                               Py_SetPythonHome(python_home.c_str());
+#else
+                               static std::string python_home = python_dir.string();
+                               Py_SetPythonHome(python_home.c_str());
+#endif
+
+                               static pybind11::scoped_interpreter guard{};
+                           });
         }
+
+        pimpl()
+        {
+            ensure_interpreter();
+            globals = std::make_unique<pybind11::dict>(pybind11::module_::import("builtins").attr("__dict__").attr("copy")());
+        }
+    };
+
+    PythonEngine::PythonEngine()
+      : p(std::make_unique<pimpl>())
+    {
     }
+    PythonEngine::~PythonEngine() = default;
 
     void PythonEngine::executeString(const std::string& str)
     {
-        pybind11::gil_scoped_acquire acquire;
-        pybind11::exec(str);
+        pybind11::exec(str, *p->globals);
     }
-    
+
     void PythonEngine::executeFile(const std::string& filename)
     {
-        pybind11::gil_scoped_acquire acquire;
-        pybind11::eval_file(filename, pybind11::globals());
+        pybind11::eval_file(filename, *p->globals);
     }
 
     void PythonEngine::setVar(const std::string& name, const Node& value)
     {
-        pybind11::gil_scoped_acquire acquire;
-        pybind11::globals()[name.c_str()] = Conversion::node2py(value);
+        auto& globals         = *p->globals;
+        globals[name.c_str()] = Conversion::node2py(value);
     }
 
     Node PythonEngine::getVar(const std::string& name)
     {
-        pybind11::gil_scoped_acquire acquire;
-        return Conversion::py2node(pybind11::globals()[name.c_str()]);
+        if (p->globals->contains(name.c_str()))
+        {
+            auto& globals = *p->globals;
+            return Conversion::py2node(globals[name.c_str()]);
+        }
+        throw std::runtime_error("Variable not found: " + name);
     }
 }
-
 
 #ifdef ISTESTPROJECT
 #include <catch2/catch_test_macros.hpp>
@@ -108,15 +131,26 @@ TEST_CASE("PythonEngine: Callback Python -> C++", "[PythonEngine]")
 
 TEST_CASE("PythonEngine: Instances", "[PythonEngine]")
 {
-    // more a warning then a test!
-
     PolyglotAPI::Python::PythonEngine engine1;
     PolyglotAPI::Python::PythonEngine engine2;
 
     engine1.setVar("x", 1.0);
     engine2.setVar("x", 100.0);
 
-    REQUIRE(static_cast<double>(engine1.getVar("x")) == 100.0);
+    REQUIRE(static_cast<double>(engine1.getVar("x")) == 1.0);
 }
 
+TEST_CASE("PythonEngine: Pip", "[PythonEngine]")
+{
+    PolyglotAPI::Python::PythonEngine engine;
+
+#ifndef DEBUG
+    // numpy does not like debug builds
+    engine.executeString("import numpy;");    
+#else
+    WARN("Test skipped: NumPy C-extensions are incompatible with Debug builds.");
+#endif
+
+    REQUIRE(true);
+}
 #endif

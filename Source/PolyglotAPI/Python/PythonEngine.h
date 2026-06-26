@@ -3,6 +3,7 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <vector>
+#include "PolyglotAPI/Node.h"
 
 namespace pybind11
 {
@@ -12,8 +13,6 @@ namespace pybind11
 
 namespace PolyglotAPI
 {
-    class Node;
-
     namespace Python
     {
         class __declspec(dllexport) PythonEngine
@@ -29,7 +28,8 @@ namespace PolyglotAPI
             Node getVar(const std::string& name);
 
           private:
-            inline static std::atomic<int> instanceCount = 0;
+            class pimpl;
+            std::unique_ptr<pimpl> p = nullptr;
         };
     }
 }

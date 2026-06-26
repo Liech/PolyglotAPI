@@ -25,7 +25,7 @@ namespace PolyglotAPI::Python
             return input.cast<std::string>();
 
         if (input.is_none())
-            return Node(nullptr);
+            return Node();
 
         if (pybind11::isinstance<pybind11::dict>(input))
         {
@@ -72,6 +72,10 @@ namespace PolyglotAPI::Python
               if constexpr (std::is_same_v<T, bool>)
                   return pybind11::cast(arg);
               else if constexpr (std::is_same_v<T, double>)
+                  return pybind11::cast(arg);
+              else if constexpr (std::is_same_v<T, int>)
+                  return pybind11::cast(arg);
+              else if constexpr (std::is_same_v<T, float>)
                   return pybind11::cast(arg);
               else if constexpr (std::is_same_v<T, std::string>)
                   return pybind11::cast(arg);
