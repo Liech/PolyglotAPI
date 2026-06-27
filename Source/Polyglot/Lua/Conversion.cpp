@@ -3,7 +3,7 @@
 #include "Polyglot/Node.h"
 #include <lua.hpp>
 
-namespace PolyglotAPI::Lua
+namespace Polyglot::Lua
 {
     Conversion::Conversion(lua_State* state)
     {
@@ -210,7 +210,7 @@ namespace PolyglotAPI::Lua
 #ifdef ISTESTPROJECT
 #include <catch2/catch_test_macros.hpp>
 
-using namespace PolyglotAPI;
+using namespace Polyglot;
 
 struct LuaStateGuard
 {
@@ -229,7 +229,7 @@ struct LuaStateGuard
 TEST_CASE("Conversion: Lua -> Node -> Lua", "[Conversion]")
 {
     LuaStateGuard                guard;
-    PolyglotAPI::Lua::Conversion conv(guard.L);
+    Polyglot::Lua::Conversion conv(guard.L);
 
     lua_pushnumber(guard.L, 42.5);
     Node n_num = conv.toNode();
@@ -247,7 +247,7 @@ TEST_CASE("Conversion: Lua -> Node -> Lua", "[Conversion]")
 TEST_CASE("Conversion: Table (Map) Lua -> Node", "[Conversion]")
 {
     LuaStateGuard                guard;
-    PolyglotAPI::Lua::Conversion conv(guard.L);
+    Polyglot::Lua::Conversion conv(guard.L);
 
     lua_newtable(guard.L);
     lua_pushstring(guard.L, "key");
@@ -262,7 +262,7 @@ TEST_CASE("Conversion: Table (Map) Lua -> Node", "[Conversion]")
 TEST_CASE("Conversion: Node -> Lua Table", "[Conversion]")
 {
     LuaStateGuard                guard;
-    PolyglotAPI::Lua::Conversion conv(guard.L);
+    Polyglot::Lua::Conversion conv(guard.L);
 
     Node n;
     n["a"] = 1.0;
@@ -285,7 +285,7 @@ TEST_CASE("Conversion: Node -> Lua Table", "[Conversion]")
 TEST_CASE("Conversion: Lua Callback -> Node Call", "[Conversion]")
 {
     LuaStateGuard                guard;
-    PolyglotAPI::Lua::Conversion conv(guard.L);
+    Polyglot::Lua::Conversion conv(guard.L);
 
     luaL_dostring(guard.L, "my_func = function(x) return x * 2 end");
     lua_getglobal(guard.L, "my_func");

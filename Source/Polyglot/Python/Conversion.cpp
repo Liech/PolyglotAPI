@@ -8,7 +8,7 @@
 #include "Polyglot/Node.h"
 #include <iostream>
 
-namespace PolyglotAPI::Python
+namespace Polyglot::Python
 {
     Node Conversion::py2node(const pybind11::object& input)
     {

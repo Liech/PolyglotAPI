@@ -1,3 +1,5 @@
+#pragma once
+
 #include <functional>
 #include <iostream>
 #include <map>
@@ -6,7 +8,7 @@
 #include <variant>
 #include <vector>
 
-namespace PolyglotAPI
+namespace Polyglot
 {
     class Node
     {

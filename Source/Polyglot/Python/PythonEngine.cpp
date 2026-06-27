@@ -4,7 +4,7 @@
 #include <atomic>
 #include <pybind11/embed.h>
 
-namespace PolyglotAPI::Python
+namespace Polyglot::Python
 {
     class PythonEngine::pimpl
     {
@@ -61,7 +61,7 @@ namespace PolyglotAPI::Python
         globals[name.c_str()] = Conversion::node2py(value);
     }
 
-    Node PythonEngine::getVar(const std::string& name)
+    Node PythonEngine::getVar(const std::string& name) const
     {
         if (p->globals->contains(name.c_str()))
         {
@@ -84,11 +84,11 @@ namespace PolyglotAPI::Python
 #ifdef ISTESTPROJECT
 #include <catch2/catch_test_macros.hpp>
 
-using namespace PolyglotAPI;
+using namespace Polyglot;
 
 TEST_CASE("PythonEngine: Simple", "[PythonEngine]")
 {
-    PolyglotAPI::Python::PythonEngine engine;
+    Polyglot::Python::PythonEngine engine;
 
     engine.setVar("a", 10.0);
     engine.executeString("b = a + 5");
@@ -99,7 +99,7 @@ TEST_CASE("PythonEngine: Simple", "[PythonEngine]")
 
 TEST_CASE("PythonEngine: List&Dict", "[PythonEngine]")
 {
-    PolyglotAPI::Python::PythonEngine engine;
+    Polyglot::Python::PythonEngine engine;
 
     Node n;
     n["key"] = "value";
@@ -116,7 +116,7 @@ TEST_CASE("PythonEngine: List&Dict", "[PythonEngine]")
 
 TEST_CASE("PythonEngine: Callback C++ -> Python", "[PythonEngine]")
 {
-    PolyglotAPI::Python::PythonEngine engine;
+    Polyglot::Python::PythonEngine engine;
 
     std::function<Node(const Node&)> cb = [](const Node& arg) -> Node { return static_cast<double>(arg) * 2.0; };
 
@@ -129,7 +129,7 @@ TEST_CASE("PythonEngine: Callback C++ -> Python", "[PythonEngine]")
 
 TEST_CASE("PythonEngine: Callback Python -> C++", "[PythonEngine]")
 {
-    PolyglotAPI::Python::PythonEngine engine;
+    Polyglot::Python::PythonEngine engine;
 
     engine.executeString("def my_adder(x): return x + 10");
     Node func = engine.getVar("my_adder");
@@ -140,8 +140,8 @@ TEST_CASE("PythonEngine: Callback Python -> C++", "[PythonEngine]")
 
 TEST_CASE("PythonEngine: Instances", "[PythonEngine]")
 {
-    PolyglotAPI::Python::PythonEngine engine1;
-    PolyglotAPI::Python::PythonEngine engine2;
+    Polyglot::Python::PythonEngine engine1;
+    Polyglot::Python::PythonEngine engine2;
 
     engine1.setVar("x", 1.0);
     engine2.setVar("x", 100.0);
@@ -151,7 +151,7 @@ TEST_CASE("PythonEngine: Instances", "[PythonEngine]")
 
 TEST_CASE("PythonEngine: Pip", "[PythonEngine]")
 {
-    PolyglotAPI::Python::PythonEngine engine;
+    Polyglot::Python::PythonEngine engine;
 
 #ifndef DEBUG
     // numpy does not like debug builds
@@ -165,7 +165,7 @@ TEST_CASE("PythonEngine: Pip", "[PythonEngine]")
 
 TEST_CASE("PythonEngine: Dynamic Pip Installation", "[PythonEngine][Pip]")
 {
-    PolyglotAPI::Python::PythonEngine engine;
+    Polyglot::Python::PythonEngine engine;
     REQUIRE_NOTHROW(engine.addExtension("urlman"));
     REQUIRE_NOTHROW(engine.executeString("import urlman;"));
 }

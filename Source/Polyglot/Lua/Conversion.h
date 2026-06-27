@@ -4,7 +4,7 @@
 
 struct lua_State;
 
-namespace PolyglotAPI
+namespace Polyglot
 {
     class Node;
 

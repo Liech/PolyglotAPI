@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <vector>
 #include "Polyglot/Node.h"
+#include "Polyglot/Engine.h"
 
 namespace pybind11
 {
@@ -11,23 +12,23 @@ namespace pybind11
     class module_;
 }
 
-namespace PolyglotAPI
+namespace Polyglot
 {
     namespace Python
     {
-        class __declspec(dllexport) PythonEngine
+        class __declspec(dllexport) PythonEngine : public Polyglot::Engine
         {
           public:
             PythonEngine();
             virtual ~PythonEngine();
 
-            void executeString(const std::string& str);
-            void executeFile(const std::string& filename);
+            virtual void executeString(const std::string& str) override;
+            virtual void executeFile(const std::string& filename) override ;
 
-            void setVar(const std::string& name, const Node& value);
-            Node getVar(const std::string& name);
+            virtual void setVar(const std::string& name, const Node& value) override;
+            virtual Node getVar(const std::string& name) const override;
             
-            bool addExtension(const std::string& extensionName); // installs single extension with pip
+            virtual bool addExtension(const std::string& extensionName) override; // installs single extension with pip
 
           private:
             class pimpl;

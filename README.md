@@ -1,8 +1,6 @@
 # todo for v1
 
  * luarocks integration
- * rename internally everything polyglotapi->polyglot
- * class interface "Engine" is missing
  * make sure it builds on linux
 
 # Polyglot

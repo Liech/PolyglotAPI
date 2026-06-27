@@ -43,8 +43,9 @@ source_group("Python" FILES ${Python_Files})
 
 set(main_Files
     "Source/Polyglot/Node.cpp"
-    "Source/Polyglot/testmain.cpp"
     "Source/Polyglot/Node.h"
+    "Source/Polyglot/Engine.h"
+    "Source/Polyglot/testmain.cpp"
 )
 source_group("" FILES ${main_Files})
 

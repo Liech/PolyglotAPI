@@ -1,6 +1,6 @@
 #include "Node.h"
 
-namespace PolyglotAPI
+namespace Polyglot
 {
     Node::Node()
       : value(nullptr)
@@ -175,7 +175,7 @@ namespace PolyglotAPI
 #include <catch2/catch_test_macros.hpp>
 #include <nlohmann/json.hpp>
 
-using namespace PolyglotAPI;
+using namespace Polyglot;
 
 TEST_CASE("Node Basetest", "[Node]")
 {

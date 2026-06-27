@@ -5,7 +5,7 @@ namespace pybind11
     class object;
 }
 
-namespace PolyglotAPI
+namespace Polyglot
 {
     class Node;
 

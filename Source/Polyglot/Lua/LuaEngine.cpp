@@ -9,7 +9,7 @@
 
 #include "Conversion.h"
 
-namespace PolyglotAPI
+namespace Polyglot
 {
     namespace Lua
     {
@@ -141,7 +141,7 @@ namespace PolyglotAPI
             lua_setglobal(state, name.c_str());
         }
 
-        Node LuaEngine::getVar(const std::string& name)
+        Node LuaEngine::getVar(const std::string& name) const
         {
             Conversion conversion(state);
             lua_getglobal(state, name.c_str());
@@ -157,11 +157,11 @@ namespace PolyglotAPI
 #ifdef ISTESTPROJECT
 #include <catch2/catch_test_macros.hpp>
 
-using namespace PolyglotAPI;
+using namespace Polyglot;
 
 TEST_CASE("LuaEngine: Set/Get var", "[LuaEngine]")
 {
-    PolyglotAPI::Lua::LuaEngine engine;
+    Polyglot::Lua::LuaEngine engine;
 
     Node n_num = 42.0;
     engine.setVar("myNum", n_num);
@@ -174,7 +174,7 @@ TEST_CASE("LuaEngine: Set/Get var", "[LuaEngine]")
 
 TEST_CASE("LuaEngine: Manipulate via Lua", "[LuaEngine]")
 {
-    PolyglotAPI::Lua::LuaEngine engine;
+    Polyglot::Lua::LuaEngine engine;
     engine.setVar("x", 10.0);
     engine.executeString("x = x + 5");
     REQUIRE((double)engine.getVar("x") == 15.0);
@@ -182,7 +182,7 @@ TEST_CASE("LuaEngine: Manipulate via Lua", "[LuaEngine]")
 
 TEST_CASE("LuaEngine: Table Handling", "[LuaEngine]")
 {
-    PolyglotAPI::Lua::LuaEngine engine;
+    Polyglot::Lua::LuaEngine engine;
 
     Node table;
     table["a"] = 1.0;
@@ -196,7 +196,7 @@ TEST_CASE("LuaEngine: Table Handling", "[LuaEngine]")
 
 TEST_CASE("LuaEngine: Callback Test", "[LuaEngine]")
 {
-    PolyglotAPI::Lua::LuaEngine engine;
+    Polyglot::Lua::LuaEngine engine;
 
     std::function<Node(const Node& arg)> func = [](const Node& arg) -> Node { return static_cast<double>(arg) * 2.0; };
     Node                                 cb   = func;
@@ -210,7 +210,7 @@ TEST_CASE("LuaEngine: Callback Test", "[LuaEngine]")
 
 TEST_CASE("LuaEngine: Dynamische Parameter-Übergabe", "[LuaEngine]")
 {
-    PolyglotAPI::Lua::LuaEngine engine;
+    Polyglot::Lua::LuaEngine engine;
 
     std::function<Node(const Node& arg)> func = [](const Node& arg) -> Node
     {
@@ -235,7 +235,7 @@ TEST_CASE("LuaEngine: Dynamische Parameter-Übergabe", "[LuaEngine]")
 
 TEST_CASE("LuaEngine: Summen-Callback mit Vektor-Argumenten", "[LuaEngine]")
 {
-    PolyglotAPI::Lua::LuaEngine engine;
+    Polyglot::Lua::LuaEngine engine;
 
     std::function<Node(const Node& arg)> func = [](const Node& arg) -> Node
     {
@@ -264,7 +264,7 @@ TEST_CASE("LuaEngine: Summen-Callback mit Vektor-Argumenten", "[LuaEngine]")
 
 TEST_CASE("LuaEngine: Lua Callback -> Node Call", "[LuaEngine]")
 {
-    PolyglotAPI::Lua::LuaEngine engine;
+    Polyglot::Lua::LuaEngine engine;
     engine.executeString("my_func = function(x) return x * 2 end");
     auto fun = engine.getVar("my_func");
 
