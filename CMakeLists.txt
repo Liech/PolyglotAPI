@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.24...4.0.2)
 
-project(PolyglotAPI)
+project(Polyglot)
 
 option(POLYGLOT_ENABLE_PYTHON "Polyglot Python" ON)
 option(POLYGLOT_ENABLE_LUA "Polyglot Lua" ON)
@@ -26,25 +26,25 @@ endif()
 ############################################################################
 
 set(Lua_Files
-    "Source/PolyglotAPI/Lua/LuaEngine.h"
-    "Source/PolyglotAPI/Lua/LuaEngine.cpp"
-    "Source/PolyglotAPI/Lua/Conversion.h"
-    "Source/PolyglotAPI/Lua/Conversion.cpp"
+    "Source/Polyglot/Lua/LuaEngine.h"
+    "Source/Polyglot/Lua/LuaEngine.cpp"
+    "Source/Polyglot/Lua/Conversion.h"
+    "Source/Polyglot/Lua/Conversion.cpp"
 )
 source_group("Lua" FILES ${Lua_Files})
 
 set(Python_Files
-    "Source/PolyglotAPI/Python/PythonEngine.h"
-    "Source/PolyglotAPI/Python/PythonEngine.cpp"
-    "Source/PolyglotAPI/Python/Conversion.h"
-    "Source/PolyglotAPI/Python/Conversion.cpp"
+    "Source/Polyglot/Python/PythonEngine.h"
+    "Source/Polyglot/Python/PythonEngine.cpp"
+    "Source/Polyglot/Python/Conversion.h"
+    "Source/Polyglot/Python/Conversion.cpp"
 )
 source_group("Python" FILES ${Python_Files})
 
 set(main_Files
-    "Source/PolyglotAPI/Node.cpp"
-    "Source/PolyglotAPI/testmain.cpp"
-    "Source/PolyglotAPI/Node.h"
+    "Source/Polyglot/Node.cpp"
+    "Source/Polyglot/testmain.cpp"
+    "Source/Polyglot/Node.h"
 )
 source_group("" FILES ${main_Files})
 
@@ -66,12 +66,12 @@ endif()
 
 add_library(PolyglotDependencies INTERFACE)
 
-add_library(PolyglotAPI SHARED ${ALL_FILES})
-add_executable(PolyglotAPITest ${ALL_FILES})
-target_compile_definitions(PolyglotAPITest PRIVATE -DISTESTPROJECT=1)
+add_library(Polyglot SHARED ${ALL_FILES})
+add_executable(PolyglotTest ${ALL_FILES})
+target_compile_definitions(PolyglotTest PRIVATE -DISTESTPROJECT=1)
 
-set_property(TARGET PolyglotAPI PROPERTY CXX_STANDARD 23)
-set_property(TARGET PolyglotAPITest PROPERTY CXX_STANDARD 23)
+set_property(TARGET Polyglot PROPERTY CXX_STANDARD 23)
+set_property(TARGET PolyglotTest PROPERTY CXX_STANDARD 23)
 
 target_link_libraries(PolyglotDependencies INTERFACE
     nlohmann_json::nlohmann_json
@@ -91,19 +91,19 @@ if(POLYGLOT_ENABLE_PYTHON)
     target_include_directories(PolyglotDependencies INTERFACE ${Python3_INCLUDE_DIRS})
 endif()
 
-target_link_libraries(PolyglotAPI PUBLIC PolyglotDependencies)
-target_link_libraries(PolyglotAPITest PRIVATE PolyglotDependencies Catch2::Catch2WithMain)
+target_link_libraries(Polyglot PUBLIC PolyglotDependencies)
+target_link_libraries(PolyglotTest PRIVATE PolyglotDependencies Catch2::Catch2WithMain)
 
-set_target_properties(PolyglotAPITest PROPERTIES 
+set_target_properties(PolyglotTest PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/Test/$<CONFIG>"
 )
-set_target_properties(PolyglotAPI PROPERTIES 
+set_target_properties(Polyglot PROPERTIES 
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>"
 )
-target_compile_definitions(PolyglotAPITest PRIVATE
+target_compile_definitions(PolyglotTest PRIVATE
     $<$<CONFIG:Debug>:DEBUG>
 )
-target_compile_definitions(PolyglotAPI PRIVATE
+target_compile_definitions(Polyglot PRIVATE
     $<$<CONFIG:Debug>:DEBUG>
 )
 ############################################################################
@@ -113,18 +113,18 @@ if(POLYGLOT_ENABLE_PYTHON)
     get_filename_component(PYTHON_ROOT "${Python3_EXECUTABLE}" DIRECTORY)
 
     add_custom_command(
-        TARGET PolyglotAPI POST_BUILD
+        TARGET Polyglot POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E env PYTHON_ROOT="${PYTHON_ROOT}" 
                 ${PYTHON_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sync_python.py" 
-                "${PYTHON_ROOT}" "$<TARGET_FILE_DIR:PolyglotAPI>/python" ${PYTHON_EXT_ARGS}
+                "${PYTHON_ROOT}" "$<TARGET_FILE_DIR:Polyglot>/python" ${PYTHON_EXT_ARGS}
         COMMENT "Syncing Python environment and installing extensions"
         VERBATIM
     )
     add_custom_command(
-        TARGET PolyglotAPITest POST_BUILD
+        TARGET PolyglotTest POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E env PYTHON_ROOT="${PYTHON_ROOT}" 
                 ${PYTHON_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/sync_python.py" 
-                "${PYTHON_ROOT}" "$<TARGET_FILE_DIR:PolyglotAPITest>/python" ${PYTHON_EXT_ARGS}
+                "${PYTHON_ROOT}" "$<TARGET_FILE_DIR:PolyglotTest>/python" ${PYTHON_EXT_ARGS}
         COMMENT "Syncing Python environment and installing extensions"
         VERBATIM
     )

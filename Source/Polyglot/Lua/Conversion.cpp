@@ -1,6 +1,6 @@
 #include "Conversion.h"
 
-#include "PolyglotAPI/Node.h"
+#include "Polyglot/Node.h"
 #include <lua.hpp>
 
 namespace PolyglotAPI::Lua

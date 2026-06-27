@@ -3,7 +3,7 @@
 #include <memory>
 #include <nlohmann/json.hpp>
 #include <vector>
-#include "PolyglotAPI/Node.h"
+#include "Polyglot/Node.h"
 
 namespace pybind11
 {

@@ -5,7 +5,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "PolyglotAPI/Node.h"
+#include "Polyglot/Node.h"
 
 #include "Conversion.h"
 
