@@ -61,6 +61,21 @@ And here one that calls lua from c++
     double result = res;
 ```
 
+You also can leverage full nested json like structures.
+
+```cpp
+    PolyglotAPI::Lua::LuaEngine engine;
+
+    nlohmann::json table;
+    table["a"] = 1.0;
+    table["b"] = 2.0;
+
+    engine.setVar("myTable", table);
+    engine.executeString("sum = myTable.a + myTable.b");
+    Node sum = engine.getVar("sum");
+    double result = sum;
+```
+
 # Language Extensions
 
 There are cmake these variables to install the packages in the buildstep.
