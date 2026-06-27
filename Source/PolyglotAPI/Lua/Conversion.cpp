@@ -43,23 +43,24 @@ namespace PolyglotAPI::Lua
 
             case LUA_TFUNCTION:
             {
-                lua_pushvalue(_state, -1);
-                int  r   = luaL_ref(_state, LUA_REGISTRYINDEX);
+                lua_State* L = _state;
+                lua_pushvalue(L, -1);
+                int r = luaL_ref(L, LUA_REGISTRYINDEX);
                 auto ref = std::shared_ptr<int>(new int(r),
-                                                [this](int* ptr)
+                                                [L](int* ptr)
                                                 {
-                                                    luaL_unref(_state, LUA_REGISTRYINDEX, *ptr);
+                                                    luaL_unref(L, LUA_REGISTRYINDEX, *ptr);
                                                     delete ptr;
                                                 });
-
                 return Node(
-                  [this, ref](const Node& arg) -> Node
+                  [L, ref](const Node& arg) -> Node
                   {
-                      lua_rawgeti(_state, LUA_REGISTRYINDEX, *ref);
-                      this->toTable(arg.toJson());
-                      lua_pcall(_state, 1, 1, 0);
-                      Node result = this->toNode();
-                      lua_pop(_state, 1);
+                      lua_rawgeti(L, LUA_REGISTRYINDEX, *ref);
+                      Conversion c(L);
+                      c.toTable(arg);
+                      lua_pcall(L, 1, 1, 0);
+                      Node result = c.toNode();
+                      lua_pop(L, 1);
                       return result;
                   });
             }
@@ -158,7 +159,7 @@ namespace PolyglotAPI::Lua
                             arg = Node(vec);
                         }
 
-                        Node       res  = (**ptr)(arg);
+                        Node res = (**ptr)(arg);
                         conv.toTable(res);
                         return 1;
                     },

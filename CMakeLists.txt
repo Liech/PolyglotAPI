@@ -4,8 +4,8 @@ project(PolyglotAPI)
 
 option(POLYGLOT_ENABLE_PYTHON "Polyglot Python" ON)
 option(POLYGLOT_ENABLE_LUA "Polyglot Lua" ON)
-# pytz is just small thing to load in a unit test
 set(POLYGLOT_PYTHON_EXTENSIONS "numpy" CACHE STRING "Space-separated list of pip packages")
+set(POLYGLOT_LUA_EXTENSIONS "LuaFileSystem" CACHE STRING "Space-separated list of luarocks packages")
 
 ############################################################################
 

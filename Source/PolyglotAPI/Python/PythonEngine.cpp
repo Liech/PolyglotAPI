@@ -166,7 +166,6 @@ TEST_CASE("PythonEngine: Pip", "[PythonEngine]")
 TEST_CASE("PythonEngine: Dynamic Pip Installation", "[PythonEngine][Pip]")
 {
     PolyglotAPI::Python::PythonEngine engine;
-    engine.executeString("import pip;");
     REQUIRE_NOTHROW(engine.addExtension("urlman"));
     REQUIRE_NOTHROW(engine.executeString("import urlman;"));
 }

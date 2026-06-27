@@ -262,4 +262,14 @@ TEST_CASE("LuaEngine: Summen-Callback mit Vektor-Argumenten", "[LuaEngine]")
     REQUIRE(static_cast<double>(res) == 35.0);
 }
 
+TEST_CASE("LuaEngine: Lua Callback -> Node Call", "[LuaEngine]")
+{
+    PolyglotAPI::Lua::LuaEngine engine;
+    engine.executeString("my_func = function(x) return x * 2 end");
+    auto fun = engine.getVar("my_func");
+
+    Node result = fun(21.0);
+    REQUIRE(std::get<double>(result.value) == 42.0);
+}
+
 #endif
