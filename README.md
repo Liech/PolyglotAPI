@@ -25,7 +25,8 @@ void run(Engine& engine)
 {
     engine.setVar("a", 10.0);
     engine.executeString("b = a + 5");
-    Node result = engine.getVar("b");    
+    Node result = engine.getVar("b");
+    double numberResult = result;
 }
 
 LuaEngine lua;
@@ -47,6 +48,7 @@ This works in both ways. Here is a way to call a c++ function from lua.
     engine.setVar("myCallback", func);
     engine.executeString("result = myCallback(21)");
     Node res = engine.getVar("result");
+    int result = res;
 ```
 
 And here one that calls lua from c++
@@ -56,6 +58,7 @@ And here one that calls lua from c++
     engine.executeString("my_func = function(x) return x * 2 end");
     auto fun = engine.getVar("my_func");
     Node result = fun(21.0);
+    double result = res;
 ```
 
 # Language Extensions
