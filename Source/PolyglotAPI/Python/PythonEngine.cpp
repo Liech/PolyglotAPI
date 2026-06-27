@@ -70,6 +70,15 @@ namespace PolyglotAPI::Python
         }
         throw std::runtime_error("Variable not found: " + name);
     }
+
+    bool PythonEngine::addExtension(const std::string& extensionName)
+    {
+        std::filesystem::path exe_path   = std::filesystem::current_path();
+        std::filesystem::path python_exe = exe_path / "python" / "python.exe";
+        std::string           command    = "\"" + python_exe.string() + "\" -m pip install " + extensionName;
+        int                   result     = std::system(command.c_str());
+        return result == 0;
+    }
 }
 
 #ifdef ISTESTPROJECT
@@ -146,11 +155,20 @@ TEST_CASE("PythonEngine: Pip", "[PythonEngine]")
 
 #ifndef DEBUG
     // numpy does not like debug builds
-    engine.executeString("import numpy;");    
+    engine.executeString("import numpy;");
 #else
     WARN("Test skipped: NumPy C-extensions are incompatible with Debug builds.");
 #endif
 
     REQUIRE(true);
 }
+
+TEST_CASE("PythonEngine: Dynamic Pip Installation", "[PythonEngine][Pip]")
+{
+    PolyglotAPI::Python::PythonEngine engine;
+    engine.executeString("import pip;");
+    REQUIRE_NOTHROW(engine.addExtension("urlman"));
+    REQUIRE_NOTHROW(engine.executeString("import urlman;"));
+}
+
 #endif

@@ -26,6 +26,8 @@ namespace PolyglotAPI
 
             void setVar(const std::string& name, const Node& value);
             Node getVar(const std::string& name);
+            
+            bool addExtension(const std::string& extensionName); // installs single extension with pip
 
           private:
             class pimpl;
